@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1065690327224",
+    "project_id": "vigor-7e777",
+    "storage_bucket": "vigor-7e777.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1065690327224:android:c4d4291084a9b90918ec4d",
+        "android_client_info": {
+          "package_name": "com.example.vigor"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBRD4FahRJJmPlX_UadowtWMQR1PZpdiv4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
