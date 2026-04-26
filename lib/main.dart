@@ -50,11 +50,12 @@ class _NavigationPageState extends State<NavigationPage> {
   @override
   void initState() {
     super.initState();
+
     _pages = [
       const HomePage(),
       const WorkoutPage(),
       const Community(),
-      const DietPage(),
+      DietPage(),
       ProfilePage(username: widget.username),
     ];
   }
