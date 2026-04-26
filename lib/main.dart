@@ -1,5 +1,11 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:vigor/Pages/Community.dart';
+import 'package:vigor/Auth/login_page.dart'as service_login;
+
+import 'package:vigor/Auth/login_page.dart' as auth_login;
 import 'firebase_options.dart';
 import 'Pages/Home.dart';
 import 'Pages/Workout.dart';
@@ -19,15 +25,18 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
+    return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: NavigationPage(),
+      // Using Auth/login_page.dart as the starting point if not using StreamBuilder
+      // For now, let's keep it simple as per your manual login/register flow
+      home: const auth_login.LoginPage(),
     );
   }
 }
 
 class NavigationPage extends StatefulWidget {
-  const NavigationPage({super.key});
+  final String username;
+  const NavigationPage({super.key, required this.username});
 
   @override
   State<NavigationPage> createState() => _NavigationPageState();
@@ -36,13 +45,19 @@ class NavigationPage extends StatefulWidget {
 class _NavigationPageState extends State<NavigationPage> {
   int _selectedIndex = 0;
 
-  // IMPORTANT: These class names must match exactly what is in your files
-  final List<Widget> _pages = const [
-    HomePage(),
-    WorkoutPage(),
-    DietPage(),
-    ProfilePage(),
-  ];
+  late List<Widget> _pages;
+
+  @override
+  void initState() {
+    super.initState();
+    _pages = [
+      const HomePage(),
+      const WorkoutPage(),
+      const Community(),
+      const DietPage(),
+      ProfilePage(username: widget.username),
+    ];
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -52,9 +67,12 @@ class _NavigationPageState extends State<NavigationPage> {
         type: BottomNavigationBarType.fixed,
         currentIndex: _selectedIndex,
         onTap: (index) => setState(() => _selectedIndex = index),
+        selectedItemColor: Colors.blue,
+        unselectedItemColor: Colors.grey,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.fitness_center), label: 'Workout'),
+          BottomNavigationBarItem(icon: Icon(Icons.chat_bubble), label: 'Community'),
           BottomNavigationBarItem(icon: Icon(Icons.restaurant), label: 'Diet'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],
