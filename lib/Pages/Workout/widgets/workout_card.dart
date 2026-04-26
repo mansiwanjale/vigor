@@ -46,13 +46,18 @@ class WorkoutCard extends StatelessWidget {
                   color: Colors.white.withOpacity(0.15),
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: const Icon(
-                  Icons.fitness_center,
-                  color: Colors.white,
-                  size: 36,
+                child: Hero(
+                  tag: workout.title,
+                  child: const Icon(
+                    Icons.fitness_center,
+                    color: Colors.white,
+                    size: 36,
+                  ),
                 ),
               ),
+
               const SizedBox(width: 18),
+
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -65,7 +70,9 @@ class WorkoutCard extends StatelessWidget {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
+
                     const SizedBox(height: 8),
+
                     Text(
                       workout.category,
                       style: TextStyle(
@@ -73,7 +80,9 @@ class WorkoutCard extends StatelessWidget {
                         fontSize: 14,
                       ),
                     ),
+
                     const SizedBox(height: 12),
+
                     Row(
                       children: [
                         const Icon(
@@ -81,21 +90,31 @@ class WorkoutCard extends StatelessWidget {
                           color: Colors.white70,
                           size: 16,
                         ),
+
                         const SizedBox(width: 6),
+
                         Text(
                           '${workout.duration} min',
-                          style: const TextStyle(color: Colors.white70),
+                          style: const TextStyle(
+                            color: Colors.white70,
+                          ),
                         ),
+
                         const SizedBox(width: 18),
+
                         const Icon(
                           Icons.local_fire_department,
                           color: Colors.orangeAccent,
                           size: 18,
                         ),
+
                         const SizedBox(width: 6),
+
                         Text(
                           '${workout.calories} kcal',
-                          style: const TextStyle(color: Colors.white70),
+                          style: const TextStyle(
+                            color: Colors.white70,
+                          ),
                         ),
                       ],
                     ),

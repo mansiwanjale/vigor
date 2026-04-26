@@ -11,12 +11,19 @@ import 'Pages/Home.dart';
 import 'Pages/Workout.dart';
 import 'Pages/Diet.dart';
 import 'Pages/Profile.dart';
+import 'Pages/Workout/seed_workouts.dart';
+import 'utils/session.dart';
 
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  await seedWorkouts();
+  await Session.loadUser();
+  if (Session.getUser() == null) {
+    await Session.setUser("Shru_22");
+  }
   runApp(const MyApp());
 }
 
