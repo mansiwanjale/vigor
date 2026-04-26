@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'register_page.dart';
 import '../main.dart';
+import '../session.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -24,6 +25,7 @@ class _LoginPageState extends State<LoginPage> {
     return digest.toString();
   }
 
+// Change the function signature — no parameter needed
   Future<void> _handleLogin() async {
     String identifier = _identifierController.text.trim();
     String password = _passwordController.text.trim();
@@ -32,7 +34,7 @@ class _LoginPageState extends State<LoginPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Please fill all fields")),
       );
-      return;
+      return; // ← removed the wrong Session line from here
     }
 
     setState(() => _isLoading = true);
@@ -54,14 +56,16 @@ class _LoginPageState extends State<LoginPage> {
       }
 
       if (userDoc.exists) {
-        // Hash the input password to compare with the stored hash
         String hashedInput = _hashPassword(password);
-        
+
         if (userDoc.data()?['password'] == hashedInput) {
+          Session().currentUsername = userDoc.id; // ← correct place
           if (!mounted) return;
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) => NavigationPage(username: userDoc.id)),
+            MaterialPageRoute(
+              builder: (context) => NavigationPage(username: userDoc.id),
+            ),
           );
         } else {
           throw "Incorrect password";
@@ -77,7 +81,6 @@ class _LoginPageState extends State<LoginPage> {
       setState(() => _isLoading = false);
     }
   }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
