@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../session.dart';
+import 'dart:math';
 
 class SocialService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
@@ -111,4 +112,138 @@ class SocialService {
       'sentAt': FieldValue.serverTimestamp(),
     });
   }
+
+
+  String _generateInviteCode() {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    final rand = Random.secure();
+    final code = List.generate(3, (_) => chars[rand.nextInt(chars.length)]).join();
+    final nums = List.generate(3, (_) => chars[rand.nextInt(chars.length)]).join();
+    return '$code-$nums';
+  }
+
+  Future<String> createTribe({
+    required String name,
+    required String description,
+    required String category,
+  }) async {
+    if (name.trim().isEmpty) throw "Tribe name can't be empty";
+    if (name.trim().length < 3) throw "Name must be at least 3 characters";
+
+    // Check name not already taken
+    var existing = await _db
+        .collection('tribes')
+        .where('name', isEqualTo: name.trim())
+        .get();
+    if (existing.docs.isNotEmpty) throw "That tribe name is already taken!";
+
+    final inviteCode = _generateInviteCode();
+    final ref = await _db.collection('tribes').add({
+      'name': name.trim(),
+      'description': description.trim(),
+      'category': category,
+      'owner': _me,
+      'members': [_me],
+      'inviteCode': inviteCode,
+      'createdAt': FieldValue.serverTimestamp(),
+    });
+    return ref.id;
+  }
+
+  Future<void> joinTribeByCode(String code) async {
+    final q = await _db
+        .collection('tribes')
+        .where('inviteCode', isEqualTo: code.trim().toUpperCase())
+        .limit(1)
+        .get();
+
+    if (q.docs.isEmpty) throw "Invalid invite code";
+
+    final tribeDoc = q.docs.first;
+    final members = List<String>.from(tribeDoc['members'] ?? []);
+    if (members.contains(_me)) throw "You're already in this tribe!";
+
+    await _db.collection('tribes').doc(tribeDoc.id).update({
+      'members': FieldValue.arrayUnion([_me]),
+    });
+  }
+
+  Future<void> inviteFriendToTribe(String tribeId, String friendUsername) async {
+    // Verify caller is owner or member
+    final tribe = await _db.collection('tribes').doc(tribeId).get();
+    if (!tribe.exists) throw "Tribe not found";
+
+    final members = List<String>.from(tribe['members'] ?? []);
+    if (members.contains(friendUsername)) throw "${friendUsername} is already in this tribe!";
+
+    await _db.collection('tribes').doc(tribeId).update({
+      'members': FieldValue.arrayUnion([friendUsername]),
+    });
+  }
+
+  Future<void> leaveTribe(String tribeId) async {
+    final tribe = await _db.collection('tribes').doc(tribeId).get();
+    if (tribe['owner'] == _me) throw "You're the owner — delete the tribe or transfer ownership first";
+
+    await _db.collection('tribes').doc(tribeId).update({
+      'members': FieldValue.arrayRemove([_me]),
+    });
+  }
+
+  Future<void> removeMember(String tribeId, String username) async {
+    final tribe = await _db.collection('tribes').doc(tribeId).get();
+    if (tribe['owner'] != _me) throw "Only the owner can remove members";
+    if (username == _me) throw "You can't remove yourself";
+
+    await _db.collection('tribes').doc(tribeId).update({
+      'members': FieldValue.arrayRemove([username]),
+    });
+  }
+
+  Future<void> deleteTribe(String tribeId) async {
+    final tribe = await _db.collection('tribes').doc(tribeId).get();
+    if (tribe['owner'] != _me) throw "Only the owner can delete this tribe";
+
+    await _db.collection('tribes').doc(tribeId).delete();
+  }
+
+  // ── Tribe Streams ────────────────────────────────────────
+  Stream<QuerySnapshot> get myTribes => _db
+      .collection('tribes')
+      .where('members', arrayContains: _me)
+      .snapshots();
+
+  Stream<QuerySnapshot> getTribeMessages(String tribeId) => _db
+      .collection('tribes')
+      .doc(tribeId)
+      .collection('chat')
+      .orderBy('sentAt', descending: false)
+      .snapshots();
+
+  Future<void> sendTribeMessage(String tribeId, String text) async {
+    await _db
+        .collection('tribes')
+        .doc(tribeId)
+        .collection('chat')
+        .add({
+      'from': _me,
+      'text': text,
+      'sentAt': FieldValue.serverTimestamp(),
+    });
+  }
+
+  // Get my friends list (for invite picker)
+  Future<List<String>> getMyFriendUsernames() async {
+    final snap = await _db
+        .collection('friendships')
+        .where('participants', arrayContains: _me)
+        .get();
+
+    return snap.docs.map((doc) {
+      final participants = List<String>.from(doc['participants']);
+      return participants.firstWhere((p) => p != _me);
+    }).toList();
+  }
+
 }
+
