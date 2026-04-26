@@ -37,7 +37,7 @@ class _NavigationPageState extends State<NavigationPage> {
   int _selectedIndex = 0;
 
   // IMPORTANT: These class names must match exactly what is in your files
-  final List<Widget> _pages = const [
+  final List<Widget> _pages = [
     HomePage(),
     WorkoutPage(),
     DietPage(),
