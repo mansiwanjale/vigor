@@ -12,7 +12,12 @@
           "package_name": "com.example.vigor"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "1065690327224-aesie6hkm0dc45m7pg69u80fkpq39ca4.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyBRD4FahRJJmPlX_UadowtWMQR1PZpdiv4"
@@ -20,7 +25,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1065690327224-aesie6hkm0dc45m7pg69u80fkpq39ca4.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1065690327224-vdiqi4e7dj2u570c9vidid8742lq76k6.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.vigor"
+              }
+            }
+          ]
         }
       }
     }
