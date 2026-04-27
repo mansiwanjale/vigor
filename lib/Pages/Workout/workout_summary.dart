@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:vigor/main.dart';
+import 'package:vigor/session.dart';
 import 'workout_home.dart';
 
 class WorkoutSummary extends StatelessWidget {
@@ -191,7 +193,9 @@ class WorkoutSummary extends StatelessWidget {
                   Navigator.pushAndRemoveUntil(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => const WorkoutHome(),
+                      builder: (_) => NavigationPage(
+                        username: Session().currentUsername ?? "User",
+                      ),
                     ),
                         (route) => false,
                   );

@@ -19,32 +19,29 @@ class MealService {
   CollectionReference get meals => firestore.collection('meals');
 
   Future<void> addMeal(
-    String type,
-    String items,
-    String date,
-    String time,
-    int calories,
-    int protein,
-    String note,
-    String status,
-    // 👈 ADD THIS
-  ) async {
+      String type,
+      String items,
+      String date,
+      String time,
+      int calories,
+      int protein,
+      String note,
+      String status,
+
+      ) async {
     await meals.add({
       'userId': Session().currentUsername,
       'type': type,
       'items': items,
       'calories': calories,
       'protein': protein,
-      'status': status, // 👈 USE THIS
+      'status': status,
       'note': note,
       'date': date,
       'time': time,
     });
   }
 
-  //Stream<QuerySnapshot> getMeals() {
-  //return meals.snapshots();
-  //}
   Stream<QuerySnapshot> getMeals() {
     return meals
         .where('userId', isEqualTo: Session().currentUsername)
@@ -56,14 +53,14 @@ class MealService {
   }
 
   Future<void> updateMeal(
-    String id,
-    String type,
-    String items,
-    int calories,
-    int protein,
-    String note,
-    String status,
-  ) async {
+      String id,
+      String type,
+      String items,
+      int calories,
+      int protein,
+      String note,
+      String status,
+      ) async {
     await meals.doc(id).update({
       'type': type,
       'items': items,
@@ -135,6 +132,7 @@ class _DietPageState extends State<DietPage> {
     }
   }
 
+
   Color _getMealColor(String type) {
     switch (type) {
       case "breakfast":
@@ -147,6 +145,7 @@ class _DietPageState extends State<DietPage> {
         return Colors.purple;
     }
   }
+
 
   Widget _categoryChip(String type) {
     bool isSelected = selectedCategory == type;
@@ -245,7 +244,8 @@ class _DietPageState extends State<DietPage> {
           if (docs.isEmpty) {
             return Column(
               children: [
-                // 🔥 KEEP ADD BUTTON VISIBLE
+                const SizedBox(height: 16),
+
                 GestureDetector(
                   onTap: () {
                     Navigator.push(
@@ -256,8 +256,6 @@ class _DietPageState extends State<DietPage> {
                     );
                   },
 
-
-                  
                   child: Container(
                     width: 220,
                     margin: const EdgeInsets.all(12),
@@ -272,7 +270,7 @@ class _DietPageState extends State<DietPage> {
                       children: const [
                         Icon(Icons.add, color: Colors.white),
                         SizedBox(width: 10),
-                        
+
                         Text(
                           "Add New Meal",
                           style: TextStyle(
@@ -288,7 +286,7 @@ class _DietPageState extends State<DietPage> {
 
                 const SizedBox(height: 40),
 
-                const Center(child: Text("No meals added yet 🍽️")),
+                const Center(child: Text("No meals added yet ")),
               ],
             );
           }
@@ -309,7 +307,7 @@ class _DietPageState extends State<DietPage> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      "Let's track your meals today 🍎",
+                      "Let's track your meals here ",
                       style: TextStyle(color: Colors.grey[600], fontSize: 13),
                     ),
                   ],
@@ -352,6 +350,7 @@ class _DietPageState extends State<DietPage> {
                   ],
                 ),
               ),
+              const SizedBox(height: 16),
 
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
@@ -365,6 +364,7 @@ class _DietPageState extends State<DietPage> {
                   ],
                 ),
               ),
+              const SizedBox(height: 16),
               Center(
                 child: GestureDetector(
                   onTap: () {
@@ -411,6 +411,7 @@ class _DietPageState extends State<DietPage> {
                   ),
                 ),
               ),
+              const SizedBox(height: 16),
 
               // 🔥 LIST
               Expanded(
@@ -471,7 +472,7 @@ class _DietPageState extends State<DietPage> {
                                   // TITLE + STATUS
                                   Row(
                                     mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
+                                    MainAxisAlignment.spaceBetween,
                                     children: [
                                       Expanded(
                                         child: Text(
@@ -526,7 +527,7 @@ class _DietPageState extends State<DietPage> {
                                           ),
                                         ),
                                         child: Text(
-                                          "🔥 ${data['calories'] ?? 0} kcal",
+                                          " ${data['calories'] ?? 0} kcal",
                                           style: const TextStyle(fontSize: 12),
                                         ),
                                       ),
@@ -543,7 +544,7 @@ class _DietPageState extends State<DietPage> {
                                           ),
                                         ),
                                         child: Text(
-                                          "💪 ${data['protein'] ?? 0} g",
+                                          " ${data['protein'] ?? 0} g",
                                           style: const TextStyle(fontSize: 12),
                                         ),
                                       ),
@@ -667,7 +668,7 @@ class _EditMealDialogState extends State<EditMealDialog> {
               items: ["breakfast", "lunch", "dinner", "snack"]
                   .map(
                     (type) => DropdownMenuItem(value: type, child: Text(type)),
-                  )
+              )
                   .toList(),
               onChanged: (value) {
                 setState(() {
