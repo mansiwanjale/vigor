@@ -5,7 +5,7 @@ import 'dart:math';
 class SocialService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
-  String get _me => Session().currentUsername;
+  String get _me => Session().currentUsername ?? ""; // Fixed type mismatch (added ?? "")
 
   // ── Search ──────────────────────────────────────────────
   Future<Map<String, dynamic>?> findUser(String query) async {
@@ -246,4 +246,3 @@ class SocialService {
   }
 
 }
-
