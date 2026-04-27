@@ -1,338 +1,296 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:vigor/Auth/login_page.dart' as auth_login;
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import '../main.dart';
 
-class ProfilePage extends StatefulWidget {
-  final String username;
-  const ProfilePage({super.key, required this.username});
+Future<void> showWaterNotification(int amount) async {
+  const AndroidNotificationDetails androidDetails =
+  AndroidNotificationDetails(
+    'water_channel',
+    'Water Reminder',
+    channelDescription: 'Water tracking notifications',
+    importance: Importance.max,
+    priority: Priority.high,
+  );
 
-  @override
-  State<ProfilePage> createState() => _ProfilePageState();
+  const NotificationDetails details =
+  NotificationDetails(android: androidDetails);
+
+  await flutterLocalNotificationsPlugin.show(
+    DateTime.now().millisecondsSinceEpoch ~/ 1000,
+    "Water Intake 💧",
+    "You added $amount ml water",
+    details,
+  );
 }
 
-class _ProfilePageState extends State<ProfilePage> {
+class ProfilePage extends StatelessWidget {
+  final String username;
 
-  final ref = FirebaseFirestore.instance.collection('user_profiles');
+  const ProfilePage({super.key, required this.username});
 
-  // 🔔 ADD NOTIFICATION
-  Future<void> addNotification(String title, String msg) async {
-    await ref.doc(widget.username)
-        .collection('notifications')
-        .add({
-      'title': title,
-      'message': msg,
-      'time': Timestamp.now(),
-    });
-  }
-
-  String today() {
-    const days = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
-    return days[DateTime.now().weekday - 1];
-  }
-
-  // 🏋️ UPDATE STEPS + GRAPH
-  Future<void> updateSteps(String workout) async {
-
-    int steps = 1000;
-    if (workout == "Running") steps = 4000;
-    if (workout == "Walking") steps = 2000;
-    if (workout == "Cycling") steps = 3000;
-
-    final doc = await ref.doc(widget.username).get();
-
-    final data = (doc.data() ?? {}) as Map<String, dynamic>;
-
-    int current = data['stepsToday'] ?? 0;
-
-    Map<String, dynamic> history =
-    Map<String, dynamic>.from(data['activityHistory'] ?? {});
-
-    history[today()] = (history[today()] ?? 0) + steps;
-
-    await ref.doc(widget.username).update({
-      'stepsToday': current + steps,
-      'lastWorkout': workout,
-      'activityHistory': history
-    });
-
-    addNotification("Workout 🏋️", "$workout added $steps steps");
-  }
-
-  // 🍽️ ADD MEAL
-  Future<void> addMeal(String meal) async {
-    await ref.doc(widget.username).update({
-      'lastMeal': meal
-    });
-
-    addNotification("Meal 🍽️", "$meal added");
-  }
-
-  // 🧠 INIT USER
-  Future<void> initUser(DocumentSnapshot doc) async {
-    if (!doc.exists) {
-      await ref.doc(widget.username).set({
-        'name': widget.username,
-        'stepsToday': 0,
-        'stepGoal': 6000,
-        'water': 0,
-        'calories': 0,
-        'lastMeal': "",
-        'lastWorkout': "",
-        'activityHistory': {
-          "Mon":0,"Tue":0,"Wed":0,
-          "Thu":0,"Fri":0,"Sat":0,"Sun":0
-        }
-      });
-    }
+  int parseValue(dynamic v) {
+    if (v == null) return 0;
+    if (v is int) return v;
+    if (v is double) return v.toInt();
+    if (v is String) return int.tryParse(v) ?? 0;
+    return 0;
   }
 
   @override
   Widget build(BuildContext context) {
+    final userRef =
+    FirebaseFirestore.instance.collection('user_profiles').doc(username);
+
+    final profileFields = [
+      "name", "age", "gender", "weight", "height", "goal",
+      "city", "phone"
+    ];
 
     return Scaffold(
+      backgroundColor: Colors.grey[100],
+
       appBar: AppBar(
-        title: const Text("Dashboard"),
-        backgroundColor: Colors.deepPurple,
+        title: const Text("Profile"),
+        centerTitle: true,
+        backgroundColor: Colors.teal,
         actions: [
           IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () async {
-              await FirebaseAuth.instance.signOut();
-              Navigator.pop(context);
+            icon: const Icon(Icons.notifications),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => ActivityPage(username: username),
+                ),
+              );
             },
+          ),
+          Padding(
+            padding: const EdgeInsets.only(right: 10),
+            child: ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+              ),
+              onPressed: () async {
+                await FirebaseAuth.instance.signOut();
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(
+                      builder: (_) => const auth_login.LoginPage()),
+                      (route) => false,
+                );
+              },
+              icon: const Icon(Icons.logout),
+              label: const Text("Logout"),
+            ),
           )
         ],
       ),
 
       body: StreamBuilder<DocumentSnapshot>(
-        stream: ref.doc(widget.username).snapshots(),
-        builder: (context, snap) {
-
-          if (!snap.hasData) {
+        stream: userRef.snapshots(),
+        builder: (context, userSnap) {
+          if (!userSnap.hasData) {
             return const Center(child: CircularProgressIndicator());
           }
 
-          final doc = snap.data!;
-          initUser(doc);
+          final userData =
+              userSnap.data!.data() as Map<String, dynamic>? ?? {};
 
-          if (!doc.exists) {
-            return const Center(child: CircularProgressIndicator());
-          }
+          int water = parseValue(userData['water']);
+          int goal = parseValue(userData['stepGoal']);
+          int safeGoal = goal == 0 ? 6000 : goal;
 
-          final data = (doc.data() ?? {}) as Map<String, dynamic>;
+          int filled = profileFields.where((f) {
+            return userData[f] != null &&
+                userData[f].toString().isNotEmpty;
+          }).length;
 
-          final history = Map<String, dynamic>.from(
-              data['activityHistory'] ?? {});
+          int percent = ((filled / profileFields.length) * 100).toInt();
 
-          final days = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+          return StreamBuilder<QuerySnapshot>(
+            stream: FirebaseFirestore.instance
+                .collection('workouts')
+                .where('userId', isEqualTo: username)
+                .snapshots(),
+            builder: (context, workoutSnap) {
 
-          return ListView(
-            padding: const EdgeInsets.all(12),
-            children: [
+              int totalSteps = 0;
+              int totalBurned = 0;
 
-              // HEADER
-              Card(
-                color: Colors.deepPurple,
-                child: ListTile(
-                  title: Text(data['name'] ?? "User",
-                      style: const TextStyle(color: Colors.white)),
-                  subtitle: Text(
-                    "Steps: ${data['stepsToday'] ?? 0}",
-                    style: const TextStyle(color: Colors.white70),
-                  ),
-                ),
-              ),
+              if (workoutSnap.hasData) {
+                for (var d in workoutSnap.data!.docs) {
+                  final m = d.data() as Map<String, dynamic>;
+                  totalSteps += parseValue(m['steps']);
+                  totalBurned += parseValue(m['calories']);
+                }
+              }
 
-              // STATS
-              Row(children: [
-                stat("Steps", data['stepsToday'] ?? 0),
-                stat("Goal", data['stepGoal'] ?? 6000),
-              ]),
-              Row(children: [
-                stat("Water", data['water'] ?? 0),
-                stat("Calories", data['calories'] ?? 0),
-              ]),
+              return StreamBuilder<QuerySnapshot>(
+                stream: FirebaseFirestore.instance
+                    .collection('meals')
+                    .where('userId', isEqualTo: username)
+                    .snapshots(),
+                builder: (context, mealSnap) {
 
-              // 🍽️ LAST MEAL
-              Card(
-                child: ListTile(
-                  leading: const Icon(Icons.restaurant),
-                  title: const Text("Latest Meal"),
-                  subtitle: Text(
-                      (data['lastMeal'] ?? "") == ""
-                          ? "No meal added"
-                          : data['lastMeal']),
-                ),
-              ),
+                  int totalGained = 0;
 
-              // 🏋️ LAST WORKOUT
-              Card(
-                child: ListTile(
-                  leading: const Icon(Icons.fitness_center),
-                  title: const Text("Latest Workout"),
-                  subtitle: Text(
-                      (data['lastWorkout'] ?? "") == ""
-                          ? "No workout"
-                          : data['lastWorkout']),
-                ),
-              ),
+                  if (mealSnap.hasData) {
+                    for (var d in mealSnap.data!.docs) {
+                      final m = d.data() as Map<String, dynamic>;
+                      totalGained += parseValue(m['calories']);
+                    }
+                  }
 
-              // GRAPH
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(10),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: days.map((d) {
-                      int v = history[d] ?? 0;
-                      return Column(
-                        children: [
-                          Text("$v"),
-                          Container(
-                            height: (v / 100).clamp(10, 100),
-                            width: 8,
-                            color: Colors.deepPurple,
+                  int healthScore = (
+                      ((totalSteps / safeGoal) * 50) +
+                          ((water / 2000) * 50)
+                  ).clamp(0, 100).toInt();
+
+                  return ListView(
+                    padding: const EdgeInsets.all(14),
+                    children: [
+
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Colors.teal, Colors.green],
                           ),
-                          Text(d),
-                        ],
-                      );
-                    }).toList(),
-                  ),
-                ),
-              ),
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              userData['name'] ?? username,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Text("Steps: $totalSteps",
+                                style: const TextStyle(color: Colors.white70)),
+                          ],
+                        ),
+                      ),
 
-              // DEMO BUTTONS
-              ElevatedButton(
-                onPressed: () => updateSteps("Running"),
-                child: const Text("Add Running"),
-              ),
+                      const SizedBox(height: 12),
 
-              ElevatedButton(
-                onPressed: () => addMeal("Healthy Meal"),
-                child: const Text("Add Meal"),
-              ),
+                      Row(children: [
+                        statCard("Steps", totalSteps, Colors.blue),
+                        statCard("Goal", safeGoal, Colors.green),
+                      ]),
 
-              // REMINDER
-              ElevatedButton(
-                onPressed: () {
-                  TextEditingController c = TextEditingController();
+                      Row(children: [
+                        statCard("Burned", totalBurned, Colors.red),
+                        statCard("Gained", totalGained, Colors.orange),
+                      ]),
 
-                  showDialog(
-                    context: context,
-                    builder: (_) => AlertDialog(
-                      title: const Text("Reminder"),
-                      content: TextField(controller: c),
-                      actions: [
-                        TextButton(
-                          onPressed: () async {
-                            await ref.doc(widget.username)
-                                .collection('reminders')
-                                .add({
-                              'text': c.text,
-                              'time': Timestamp.now()
-                            });
+                      const SizedBox(height: 10),
 
-                            addNotification("Reminder ⏰", c.text);
-                            Navigator.pop(context);
-                          },
-                          child: const Text("Save"),
-                        )
-                      ],
-                    ),
+                      cardBox("Health Score", "$healthScore / 100", Colors.teal),
+
+                      Card(
+                        child: Column(
+                          children: [
+                            const Text("Water Intake"),
+                            LinearProgressIndicator(
+                              value: (water / 2000).clamp(0, 1),
+                            ),
+                            Text("$water ml / 2000 ml"),
+                            Row(
+                              mainAxisAlignment:
+                              MainAxisAlignment.spaceEvenly,
+                              children: [
+                                ElevatedButton(
+                                  onPressed: () async {
+                                    await userRef.update({'water': water + 200});
+                                    await showWaterNotification(200); // ✅ ADD THIS LINE
+                                  },
+                                  child: const Text("+200 ml"),
+                                ),
+                                ElevatedButton(
+                                  onPressed: () async {
+                                    await userRef.update({'water': water + 500});
+                                    await showWaterNotification(500); // ✅ ADD THIS LINE
+                                  },
+                                  child: const Text("+500 ml"),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 10),
+
+                      cardBox("Profile Completion", "$percent%", Colors.indigo),
+
+                      const SizedBox(height: 10),
+
+                      ElevatedButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  EditProfilePage(username: username),
+                            ),
+                          );
+                        },
+                        child: const Text("Edit Profile"),
+                      ),
+                    ],
                   );
                 },
-                child: const Text("Add Reminder"),
-              ),
-
-              // NAV
-              ListTile(
-                title: const Text("Notifications"),
-                onTap: () {
-                  Navigator.push(context,
-                      MaterialPageRoute(
-                          builder: (_) =>
-                              NotificationPage(username: widget.username)));
-                },
-              ),
-
-              ListTile(
-                title: const Text("Edit Profile"),
-                onTap: () {
-                  Navigator.push(context,
-                      MaterialPageRoute(
-                          builder: (_) =>
-                              EditProfilePage(username: widget.username)));
-                },
-              ),
-            ],
+              );
+            },
           );
         },
       ),
     );
   }
 
-  Widget stat(String t, dynamic v) {
+  Widget statCard(String title, dynamic value, Color color) {
     return Expanded(
       child: Card(
         child: Padding(
           padding: const EdgeInsets.all(10),
           child: Column(
             children: [
-              Text("$v"),
-              Text(t),
+              Text("$value", style: TextStyle(color: color)),
+              Text(title),
             ],
           ),
         ),
       ),
     );
   }
-}
 
-// 🔔 NOTIFICATIONS
-class NotificationPage extends StatelessWidget {
-  final String username;
-  const NotificationPage({super.key, required this.username});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text("Notifications")),
-      body: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance
-            .collection('user_profiles')
-            .doc(username)
-            .collection('notifications')
-            .orderBy('time', descending: true)
-            .snapshots(),
-        builder: (context, snap) {
-
-          if (!snap.hasData) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          final docs = snap.data!.docs;
-
-          if (docs.isEmpty) {
-            return const Center(child: Text("No notifications"));
-          }
-
-          return ListView(
-            children: docs.map((d) {
-              return ListTile(
-                title: Text(d['title'] ?? ""),
-                subtitle: Text(d['message'] ?? ""),
-              );
-            }).toList(),
-          );
-        },
+  Widget cardBox(String title, String value, Color color) {
+    return Card(
+      child: ListTile(
+        leading: CircleAvatar(backgroundColor: color),
+        title: Text(title),
+        trailing: Text(value),
       ),
     );
   }
 }
 
-// ✏️ EDIT PROFILE (12 FIELDS)
+//
+// ================= EDIT PROFILE PAGE =================
+//
+
 class EditProfilePage extends StatefulWidget {
   final String username;
+
   const EditProfilePage({super.key, required this.username});
 
   @override
@@ -344,24 +302,34 @@ class _EditProfilePageState extends State<EditProfilePage> {
   final ref = FirebaseFirestore.instance.collection('user_profiles');
 
   final fields = [
-    "name","age","gender","weight","height","goal",
-    "city","phone","diet","sleep","medical","notes"
+    "name","age","gender","weight",
+    "height","goal","city","phone"
   ];
+
+  // ✅ ADDED LABELS (no logic change)
+  final fieldLabels = {
+    "name": "Full Name",
+    "age": "Age",
+    "gender": "Gender",
+    "weight": "Weight (kg)",
+    "height": "Height (cm)",
+    "goal": "Fitness Goal",
+    "city": "City",
+    "phone": "Phone Number",
+  };
 
   Map<String, TextEditingController> controllers = {};
 
   @override
   void initState() {
     super.initState();
-
     for (var f in fields) {
       controllers[f] = TextEditingController();
     }
-
-    load();
+    loadData();
   }
 
-  void load() async {
+  void loadData() async {
     final doc = await ref.doc(widget.username).get();
     if (doc.exists) {
       final data = doc.data()!;
@@ -372,18 +340,32 @@ class _EditProfilePageState extends State<EditProfilePage> {
     }
   }
 
-  void save() async {
+  void saveData() async {
     Map<String, dynamic> data = {};
     controllers.forEach((k, v) => data[k] = v.text);
 
-    await ref.doc(widget.username).update(data);
+    await ref.doc(widget.username).set(data, SetOptions(merge: true));
     Navigator.pop(context);
+  }
+
+  // ✅ ADDED keyboard type helper
+  TextInputType getKeyboard(String field) {
+    if (field == "age" ||
+        field == "weight" ||
+        field == "height" ||
+        field == "phone") {
+      return TextInputType.number;
+    }
+    return TextInputType.text;
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Edit Profile")),
+      appBar: AppBar(
+        title: const Text("Edit Profile"),
+        backgroundColor: Colors.teal,
+      ),
       body: ListView(
         padding: const EdgeInsets.all(12),
         children: [
@@ -391,11 +373,101 @@ class _EditProfilePageState extends State<EditProfilePage> {
             padding: const EdgeInsets.only(bottom: 10),
             child: TextField(
               controller: controllers[f],
-              decoration: InputDecoration(labelText: f),
+              keyboardType: getKeyboard(f), // ✅ added
+              decoration: InputDecoration(
+                labelText: fieldLabels[f], // ✅ replaced label
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
             ),
           )),
-          ElevatedButton(onPressed: save, child: const Text("Save"))
+          ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.teal,
+                foregroundColor: Colors.white,
+              ),
+              onPressed: saveData,
+              child: const Text("Save"))
         ],
+      ),
+    );
+  }
+}
+
+//
+// ================= ACTIVITY PAGE =================
+//
+
+class ActivityPage extends StatelessWidget {
+  final String username;
+
+  const ActivityPage({super.key, required this.username});
+
+  @override
+  Widget build(BuildContext context) {
+
+    final workouts = FirebaseFirestore.instance
+        .collection('workouts')
+        .where('userId', isEqualTo: username);
+
+    final meals = FirebaseFirestore.instance
+        .collection('meals')
+        .where('userId', isEqualTo: username);
+
+    return Scaffold(
+      appBar: AppBar(title: const Text("Activity")),
+      body: FutureBuilder(
+        future: Future.wait([
+          workouts.get(),
+          meals.get(),
+        ]),
+        builder: (context, snapshot) {
+
+          if (!snapshot.hasData) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          final workoutDocs = (snapshot.data as List)[0].docs;
+          final mealDocs = (snapshot.data as List)[1].docs;
+
+          List activities = [];
+
+          for (var d in workoutDocs) {
+            final m = d.data();
+            activities.add({
+              'title': "Workout",
+              'msg': "Burned ${m['calories'] ?? 0} cal",
+            });
+          }
+
+          for (var d in mealDocs) {
+            final m = d.data();
+            activities.add({
+              'title': "Meal",
+              'msg': "Gained ${m['calories'] ?? 0} cal",
+            });
+          }
+
+          if (activities.isEmpty) {
+            return const Center(child: Text("No Activity"));
+          }
+
+          return ListView.builder(
+            itemCount: activities.length,
+            itemBuilder: (context, i) {
+              final a = activities[i];
+
+              return Card(
+                child: ListTile(
+                  leading: const Icon(Icons.notifications),
+                  title: Text(a['title']),
+                  subtitle: Text(a['msg']),
+                ),
+              );
+            },
+          );
+        },
       ),
     );
   }
