@@ -15,6 +15,7 @@ import 'Pages/Profile.dart';
 import 'Pages/Workout/seed_workouts.dart';
 import 'utils/session.dart';
 
+
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
