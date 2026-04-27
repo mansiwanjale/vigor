@@ -6,9 +6,10 @@ import 'package:vigor/Pages/Community.dart';
 import 'package:vigor/Auth/login_page.dart'as service_login;
 
 import 'package:vigor/Auth/login_page.dart' as auth_login;
+import 'package:vigor/Pages/Workout/workout_home.dart';
 import 'firebase_options.dart';
-import 'Pages/Home.dart';
-import 'Pages/Workout.dart';
+
+
 import 'Pages/Diet.dart';
 import 'Pages/Profile.dart';
 
@@ -52,8 +53,8 @@ class _NavigationPageState extends State<NavigationPage> {
     super.initState();
 
     _pages = [
-      const HomePage(),
-      const WorkoutPage(),
+
+      const WorkoutHome(),
       const Community(),
       DietPage(),
       ProfilePage(username: widget.username),
@@ -71,7 +72,6 @@ class _NavigationPageState extends State<NavigationPage> {
         selectedItemColor: Colors.blue,
         unselectedItemColor: Colors.grey,
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.fitness_center), label: 'Workout'),
           BottomNavigationBarItem(icon: Icon(Icons.chat_bubble), label: 'Community'),
           BottomNavigationBarItem(icon: Icon(Icons.restaurant), label: 'Diet'),
