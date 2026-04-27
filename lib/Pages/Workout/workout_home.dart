@@ -5,7 +5,7 @@ import 'widgets/progress_ring.dart';
 import 'workout_history.dart';
 import 'active_workout.dart';
 import 'models/workout_model.dart';
-import '../../utils/session.dart';
+import '../../session.dart';
 import 'widgets/workout_chart.dart';
 
 
@@ -20,7 +20,7 @@ class WorkoutHome extends StatelessWidget {
         child: StreamBuilder<QuerySnapshot>(
           stream: FirebaseFirestore.instance
               .collection('workout_history')
-              .where('username', isEqualTo: Session.getUser())
+              .where('username', isEqualTo: Session().currentUsername)
               .snapshots(),
           builder: (context, snapshot) {
             int totalCalories = 0;
@@ -92,7 +92,7 @@ class WorkoutHome extends StatelessWidget {
                           ),
                           const SizedBox(height: 6),
                           Text(
-                            'Hello ${Session.getUser()} 👋',
+                            'Hello ${Session().currentUsername ?? "User"} 👋',
                             style: const TextStyle(
                               fontSize: 30,
                               fontWeight: FontWeight.bold,
@@ -455,7 +455,9 @@ class WorkoutHome extends StatelessWidget {
             color: Colors.deepPurple,
             size: 28,
           ),
-          const SizedBox(height: 14),
+
+          const SizedBox(height: 12),
+
           Text(
             value,
             style: const TextStyle(
@@ -463,7 +465,9 @@ class WorkoutHome extends StatelessWidget {
               fontWeight: FontWeight.bold,
             ),
           ),
+
           const SizedBox(height: 6),
+
           Text(
             title,
             style: TextStyle(

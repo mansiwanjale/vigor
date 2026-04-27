@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/workout_model.dart';
-import '../../../utils/session.dart';
+import '../../../session.dart';
 
 class FirestoreWorkoutService {
   final FirebaseFirestore _firestore =
