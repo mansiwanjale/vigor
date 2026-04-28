@@ -17,6 +17,7 @@ dependencies:
   firebase_core: ^4.7.0
   firebase_auth: ^6.4.0
   cloud_firestore: ^6.3.0
+  flutter_local_notifications: ^17.0.0
 
   google_sign_in: ^6.2.1
   provider: ^6.1.2
@@ -34,6 +35,10 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
-
   assets:
-    - assets/animations/
+    - assets/images/GLASS.png
+    - assets/images/JUG.png
+    - assets/images/Vigor_Logo.png
+
+
+

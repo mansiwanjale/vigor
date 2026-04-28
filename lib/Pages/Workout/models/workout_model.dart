@@ -26,14 +26,15 @@ class WorkoutModel {
     };
   }
 
-  // 👉 Used when reading from Firebase
   factory WorkoutModel.fromMap(Map<String, dynamic> map) {
     return WorkoutModel(
       title: map["title"] ?? "",
       category: map["category"] ?? "",
-      duration: map["duration"] ?? 0,
-      calories: map["calories"] ?? 0,
+      // Use int.tryParse to safely handle Strings from Firestore
+      duration: int.tryParse(map["duration"].toString()) ?? 0,
+      calories: int.tryParse(map["calories"].toString()) ?? 0,
       image: map["image"] ?? "",
     );
   }
+
 }
