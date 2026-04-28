@@ -604,6 +604,7 @@ class _WaterButton extends StatelessWidget {
 // ── Edit Profile ────────────────────────────────────────────
 class EditProfilePage extends StatefulWidget {
   final String username;
+
   const EditProfilePage({super.key, required this.username});
   @override
   State<EditProfilePage> createState() => _EditProfilePageState();
@@ -623,6 +624,18 @@ class _EditProfilePageState extends State<EditProfilePage> {
     "goal"  : "Fitness Goal",
     "city"  : "City",
     "phone" : "Phone Number",
+  };
+
+  // ✅ ADDED LABELS (no logic change)
+  final fieldLabels = {
+    "name": "Full Name",
+    "age": "Age",
+    "gender": "Gender",
+    "weight": "Weight (kg)",
+    "height": "Height (cm)",
+    "goal": "Fitness Goal",
+    "city": "City",
+    "phone": "Phone Number",
   };
 
   Map<String, TextEditingController> controllers = {};
@@ -663,6 +676,17 @@ class _EditProfilePageState extends State<EditProfilePage> {
       default:
         return TextInputType.text;
     }
+  }
+
+  // ✅ ADDED keyboard type helper
+  TextInputType getKeyboard(String field) {
+    if (field == "age" ||
+        field == "weight" ||
+        field == "height" ||
+        field == "phone") {
+      return TextInputType.number;
+    }
+    return TextInputType.text;
   }
 
   @override
