@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:lottie/lottie.dart';
 import 'models/workout_model.dart';
 import 'workout_summary.dart';
 import 'services/firestore_workout_service.dart';
@@ -72,27 +71,25 @@ class _ActiveWorkoutState extends State<ActiveWorkout> {
   }
 
   void calculateCalories() {
-    double userWeight = 63; // kg
+    double userWeight = 63;
     double met = 0;
 
     switch (widget.workout.category.toLowerCase()) {
       case 'cardio':
         met = 8;
         break;
-
       case 'strength':
         met = 6;
         break;
-
       case 'abs':
         met = 5;
         break;
-
       default:
         met = 6;
     }
 
-    calories = ((met * userWeight * (seconds / 3600)) * 1.05).floor();
+    calories =
+        ((met * userWeight * (seconds / 3600)) * 1.05).floor();
   }
 
   void finishWorkout() async {
@@ -129,22 +126,6 @@ class _ActiveWorkoutState extends State<ActiveWorkout> {
     return '${min.toString().padLeft(2, '0')}:${rem.toString().padLeft(2, '0')}';
   }
 
-  String getAnimationUrl() {
-    switch (widget.workout.category.toLowerCase()) {
-      case "cardio":
-        return "https://assets2.lottiefiles.com/packages/lf20_j1adxtyb.json";
-
-      case "strength":
-        return "https://assets9.lottiefiles.com/packages/lf20_q5pk6p1k.json";
-
-      case "abs":
-        return "https://assets3.lottiefiles.com/packages/lf20_touohxv0.json";
-
-      default:
-        return "https://assets4.lottiefiles.com/packages/lf20_zrqthn6o.json";
-    }
-  }
-
   @override
   void dispose() {
     timer.cancel();
@@ -166,6 +147,7 @@ class _ActiveWorkoutState extends State<ActiveWorkout> {
               children: [
                 const SizedBox(height: 10),
 
+                // 🔙 Header
                 Row(
                   mainAxisAlignment:
                   MainAxisAlignment.spaceBetween,
@@ -197,6 +179,7 @@ class _ActiveWorkoutState extends State<ActiveWorkout> {
 
                 const SizedBox(height: 20),
 
+                // 🔥 IMAGE FROM FIREBASE
                 Container(
                   height: 200,
                   width: double.infinity,
@@ -205,14 +188,41 @@ class _ActiveWorkoutState extends State<ActiveWorkout> {
                     borderRadius:
                     BorderRadius.circular(28),
                   ),
-                  child: Lottie.network(
-                    getAnimationUrl(),
-                    fit: BoxFit.contain,
+                  child: ClipRRect(
+                    borderRadius:
+                    BorderRadius.circular(28),
+                    child: Image.network(
+                      widget.workout.image.isNotEmpty
+                          ? widget.workout.image
+                          : "https://images.unsplash.com/photo-1571019613914-85f342c6a11e",
+                      fit: BoxFit.cover,
+
+                      // loader
+                      loadingBuilder:
+                          (context, child, progress) {
+                        if (progress == null)
+                          return child;
+                        return const Center(
+                            child:
+                            CircularProgressIndicator());
+                      },
+
+                      // error fallback
+                      errorBuilder:
+                          (context, error, stackTrace) {
+                        return const Icon(
+                          Icons.broken_image,
+                          color: Colors.white,
+                          size: 50,
+                        );
+                      },
+                    ),
                   ),
                 ),
 
                 const SizedBox(height: 25),
 
+                // ⏱ Timer Circle
                 SizedBox(
                   width: 200,
                   height: 200,
@@ -222,7 +232,8 @@ class _ActiveWorkoutState extends State<ActiveWorkout> {
                       CircularProgressIndicator(
                         value: progress,
                         strokeWidth: 10,
-                        backgroundColor: Colors.white12,
+                        backgroundColor:
+                        Colors.white12,
                         valueColor:
                         const AlwaysStoppedAnimation(
                           Colors.deepPurple,
@@ -257,6 +268,7 @@ class _ActiveWorkoutState extends State<ActiveWorkout> {
 
                 const SizedBox(height: 20),
 
+                // 💬 Motivation
                 Text(
                   motivation[currentText],
                   style: const TextStyle(
@@ -268,6 +280,7 @@ class _ActiveWorkoutState extends State<ActiveWorkout> {
 
                 const SizedBox(height: 20),
 
+                // 📊 Stats
                 Row(
                   children: [
                     Expanded(
@@ -290,10 +303,12 @@ class _ActiveWorkoutState extends State<ActiveWorkout> {
 
                 const SizedBox(height: 30),
 
+                // 🔴 Finish Button
                 ElevatedButton(
                   onPressed: finishWorkout,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.redAccent,
+                    backgroundColor:
+                    Colors.redAccent,
                     minimumSize:
                     const Size(double.infinity, 55),
                     shape: RoundedRectangleBorder(
