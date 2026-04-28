@@ -261,6 +261,17 @@ class WorkoutSummary extends StatelessWidget {
             ),
           ),
         ],
+
+
+
+
+
+
+
+
+
+
+
       ),
     );
   }

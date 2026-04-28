@@ -18,14 +18,15 @@ class ActiveWorkout extends StatefulWidget {
 }
 
 class _ActiveWorkoutState extends State<ActiveWorkout> {
-  late Timer timer;
+  Timer? timer;
 
   int seconds = 0;
-  int totalSeconds = 300;
+  late int totalSeconds;
   int reps = 0;
   int calories = 0;
 
   bool isDown = false;
+  bool isPaused = false;
 
   List<String> motivation = [
     "Keep Going 🔥",
@@ -40,10 +41,16 @@ class _ActiveWorkoutState extends State<ActiveWorkout> {
   @override
   void initState() {
     super.initState();
+    totalSeconds = widget.workout.duration;
+    startTimer();
+  }
 
+  void startTimer() {
     timer = Timer.periodic(
       const Duration(seconds: 1),
           (timer) {
+        if (isPaused) return;
+
         if (seconds < totalSeconds) {
           setState(() {
             seconds++;
@@ -71,6 +78,12 @@ class _ActiveWorkoutState extends State<ActiveWorkout> {
     );
   }
 
+  void togglePause() {
+    setState(() {
+      isPaused = !isPaused;
+    });
+  }
+
   void calculateCalories() {
     double userWeight = 63; // kg
     double met = 0;
@@ -96,7 +109,7 @@ class _ActiveWorkoutState extends State<ActiveWorkout> {
   }
 
   void finishWorkout() async {
-    timer.cancel();
+    timer?.cancel();
 
     final completedWorkout = WorkoutModel(
       title: widget.workout.title,
@@ -109,17 +122,19 @@ class _ActiveWorkoutState extends State<ActiveWorkout> {
     await FirestoreWorkoutService()
         .saveWorkout(completedWorkout);
 
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (_) => WorkoutSummary(
-          title: widget.workout.title,
-          duration: seconds,
-          calories: calories,
-          reps: reps,
+    if (mounted) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => WorkoutSummary(
+            title: widget.workout.title,
+            duration: seconds,
+            calories: calories,
+            reps: reps,
+          ),
         ),
-      ),
-    );
+      );
+    }
   }
 
   String formatTime(int sec) {
@@ -147,7 +162,7 @@ class _ActiveWorkoutState extends State<ActiveWorkout> {
 
   @override
   void dispose() {
-    timer.cancel();
+    timer?.cancel();
     super.dispose();
   }
 
@@ -172,7 +187,7 @@ class _ActiveWorkoutState extends State<ActiveWorkout> {
                   children: [
                     IconButton(
                       onPressed: () {
-                        timer.cancel();
+                        timer?.cancel();
                         Navigator.pop(context);
                       },
                       icon: const Icon(
@@ -186,12 +201,18 @@ class _ActiveWorkoutState extends State<ActiveWorkout> {
                         textAlign: TextAlign.center,
                         style: const TextStyle(
                           color: Colors.white,
-                          fontSize: 24,
+                          fontSize: 22,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),
-                    const SizedBox(width: 40),
+                    IconButton(
+                      onPressed: togglePause,
+                      icon: Icon(
+                        isPaused ? Icons.play_arrow : Icons.pause,
+                        color: Colors.white,
+                      ),
+                    ),
                   ],
                 ),
 
@@ -205,9 +226,66 @@ class _ActiveWorkoutState extends State<ActiveWorkout> {
                     borderRadius:
                     BorderRadius.circular(28),
                   ),
-                  child: Lottie.network(
-                    getAnimationUrl(),
-                    fit: BoxFit.contain,
+                  child: isPaused 
+                    ? const Center(child: Text("PAUSED", style: TextStyle(color: Colors.white54, fontSize: 24, fontWeight: FontWeight.bold)))
+                    : Lottie.network(
+                        getAnimationUrl(),
+                        fit: BoxFit.contain,
+                      ),
+                ),
+
+                const SizedBox(height: 15),
+
+                // Live Effort Indicator at caret
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      width: 8,
+                      height: 8,
+                      decoration: BoxDecoration(
+                        color: isPaused ? Colors.grey : Colors.greenAccent,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          if (!isPaused)
+                            BoxShadow(
+                              color: Colors.greenAccent.withOpacity(0.5),
+                              blurRadius: 8,
+                              spreadRadius: 2,
+                            )
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      isPaused ? "SESSION PAUSED" : "ACTIVE SESSION",
+                      style: TextStyle(
+                        color: isPaused ? Colors.grey : Colors.greenAccent,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 1.1,
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 15),
+
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.deepPurple.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: Colors.deepPurpleAccent.withOpacity(0.5)),
+                  ),
+                  child: Text(
+                    widget.workout.category.toUpperCase(),
+                    style: const TextStyle(
+                      color: Colors.deepPurpleAccent,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1.2,
+                    ),
                   ),
                 ),
 
@@ -224,8 +302,8 @@ class _ActiveWorkoutState extends State<ActiveWorkout> {
                         strokeWidth: 10,
                         backgroundColor: Colors.white12,
                         valueColor:
-                        const AlwaysStoppedAnimation(
-                          Colors.deepPurple,
+                        AlwaysStoppedAnimation(
+                          isPaused ? Colors.grey : Colors.deepPurple,
                         ),
                       ),
                       Column(
@@ -258,9 +336,9 @@ class _ActiveWorkoutState extends State<ActiveWorkout> {
                 const SizedBox(height: 20),
 
                 Text(
-                  motivation[currentText],
-                  style: const TextStyle(
-                    color: Colors.orange,
+                  isPaused ? "Take a breath..." : motivation[currentText],
+                  style: TextStyle(
+                    color: isPaused ? Colors.white38 : Colors.orange,
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                   ),
