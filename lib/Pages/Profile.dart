@@ -627,17 +627,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
   };
 
   // ✅ ADDED LABELS (no logic change)
-  final fieldLabels = {
-    "name": "Full Name",
-    "age": "Age",
-    "gender": "Gender",
-    "weight": "Weight (kg)",
-    "height": "Height (cm)",
-    "goal": "Fitness Goal",
-    "city": "City",
-    "phone": "Phone Number",
-  };
-
   Map<String, TextEditingController> controllers = {};
 
   @override
