@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../Pages/Diet.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import '../Pages/add_meal_page.dart';
 import '../session.dart';
 
@@ -19,16 +17,15 @@ class MealService {
   CollectionReference get meals => firestore.collection('meals');
 
   Future<void> addMeal(
-      String type,
-      String items,
-      String date,
-      String time,
-      int calories,
-      int protein,
-      String note,
-      String status,
-
-      ) async {
+    String type,
+    String items,
+    String date,
+    String time,
+    int calories,
+    int protein,
+    String note,
+    String status,
+  ) async {
     await meals.add({
       'userId': Session().currentUsername,
       'type': type,
@@ -53,14 +50,14 @@ class MealService {
   }
 
   Future<void> updateMeal(
-      String id,
-      String type,
-      String items,
-      int calories,
-      int protein,
-      String note,
-      String status,
-      ) async {
+    String id,
+    String type,
+    String items,
+    int calories,
+    int protein,
+    String note,
+    String status,
+  ) async {
     await meals.doc(id).update({
       'type': type,
       'items': items,
@@ -99,7 +96,6 @@ class _DietPageState extends State<DietPage> {
 
   Widget _buildStatusBadge(String status) {
     Color color = status == "eaten" ? Colors.green : Colors.orange;
-
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
@@ -119,6 +115,7 @@ class _DietPageState extends State<DietPage> {
 
   String selectedCategory = "all";
   final MealService service = MealService();
+
   IconData _getMealIcon(String type) {
     switch (type) {
       case "breakfast":
@@ -131,7 +128,6 @@ class _DietPageState extends State<DietPage> {
         return Icons.fastfood;
     }
   }
-
 
   Color _getMealColor(String type) {
     switch (type) {
@@ -146,10 +142,8 @@ class _DietPageState extends State<DietPage> {
     }
   }
 
-
   Widget _categoryChip(String type) {
     bool isSelected = selectedCategory == type;
-
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 6),
       child: GestureDetector(
@@ -162,10 +156,7 @@ class _DietPageState extends State<DietPage> {
           duration: const Duration(milliseconds: 250),
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
           decoration: BoxDecoration(
-            gradient: isSelected
-                ? const LinearGradient(colors: [Colors.black, Colors.teal])
-                : null,
-            color: isSelected ? null : Colors.grey[200],
+            color: isSelected ? Colors.teal : Colors.grey[200],
             borderRadius: BorderRadius.circular(20),
           ),
           child: Text(
@@ -182,11 +173,7 @@ class _DietPageState extends State<DietPage> {
 
   Map<String, int> getTodaySummary(List docs) {
     String today = DateTime.now().toString().split(" ")[0];
-
-    int breakfast = 0;
-    int lunch = 0;
-    int dinner = 0;
-    int snack = 0;
+    int breakfast = 0, lunch = 0, dinner = 0, snack = 0;
 
     for (var d in docs) {
       if (d['date'] == today) {
@@ -220,10 +207,8 @@ class _DietPageState extends State<DietPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("Diet & Meal Planner")),
-
       body: StreamBuilder<QuerySnapshot>(
         stream: service.getMeals(),
-
         builder: (context, snapshot) {
           if (snapshot.hasError) {
             return Center(
@@ -233,7 +218,6 @@ class _DietPageState extends State<DietPage> {
               ),
             );
           }
-          const SizedBox(height: 20);
 
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -241,11 +225,11 @@ class _DietPageState extends State<DietPage> {
 
           final docs = snapshot.data!.docs;
           final summary = getTodaySummary(docs);
+
           if (docs.isEmpty) {
             return Column(
               children: [
                 const SizedBox(height: 16),
-
                 GestureDetector(
                   onTap: () {
                     Navigator.push(
@@ -255,22 +239,18 @@ class _DietPageState extends State<DietPage> {
                       ),
                     );
                   },
-
                   child: Container(
                     width: 220,
                     margin: const EdgeInsets.all(12),
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [Colors.green, Colors.teal],
-                      ),
+                      color: Colors.teal,
                       borderRadius: BorderRadius.circular(15),
                     ),
-                    child: Row(
-                      children: const [
+                    child: const Row(
+                      children: [
                         Icon(Icons.add, color: Colors.white),
                         SizedBox(width: 10),
-
                         Text(
                           "Add New Meal",
                           style: TextStyle(
@@ -283,10 +263,8 @@ class _DietPageState extends State<DietPage> {
                     ),
                   ),
                 ),
-
                 const SizedBox(height: 40),
-
-                const Center(child: Text("No meals added yet ")),
+                const Center(child: Text("No meals added yet")),
               ],
             );
           }
@@ -307,7 +285,7 @@ class _DietPageState extends State<DietPage> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      "Let's track your meals here ",
+                      "Let's track your meals here",
                       style: TextStyle(color: Colors.grey[600], fontSize: 13),
                     ),
                   ],
@@ -315,15 +293,14 @@ class _DietPageState extends State<DietPage> {
               ),
               const SizedBox(height: 10),
 
-              // 🔥 SUMMARY CARD (NOW PROPERLY RETURNED)
+              // Summary Card
               Container(
                 margin: const EdgeInsets.all(12),
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Colors.yellow, Colors.teal],
-                  ),
+                  color: Colors.teal[50],
                   borderRadius: BorderRadius.circular(18),
+                  border: Border.all(color: Colors.teal.shade100),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -337,7 +314,6 @@ class _DietPageState extends State<DietPage> {
                       ),
                     ),
                     const SizedBox(height: 12),
-
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -365,6 +341,8 @@ class _DietPageState extends State<DietPage> {
                 ),
               ),
               const SizedBox(height: 16),
+
+              // Add Meal Button
               Center(
                 child: GestureDetector(
                   onTap: () {
@@ -376,26 +354,22 @@ class _DietPageState extends State<DietPage> {
                     );
                   },
                   child: Container(
-                    width: 200, // ✅ THIS is the real fix
+                    width: 200,
                     padding: const EdgeInsets.symmetric(
-                      vertical: 10,
-                      horizontal: 14,
-                    ),
+                        vertical: 10, horizontal: 14),
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Colors.green, Colors.teal],
-                      ),
+                      color: Colors.teal,
                       borderRadius: BorderRadius.circular(25),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.green.withOpacity(0.3),
+                          color: Colors.teal.withOpacity(0.3),
                           blurRadius: 8,
                         ),
                       ],
                     ),
-                    child: Row(
+                    child: const Row(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      children: const [
+                      children: [
                         Icon(Icons.add, color: Colors.white, size: 18),
                         SizedBox(width: 6),
                         Text(
@@ -413,7 +387,7 @@ class _DietPageState extends State<DietPage> {
               ),
               const SizedBox(height: 16),
 
-              // 🔥 LIST
+              // Meal List
               Expanded(
                 child: ListView.builder(
                   itemCount: docs.length,
@@ -422,14 +396,12 @@ class _DietPageState extends State<DietPage> {
 
                     if (selectedCategory != "all" &&
                         data['type'] != selectedCategory) {
-                      return const SizedBox(); // hide item
+                      return const SizedBox();
                     }
 
                     return Container(
                       margin: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 8,
-                      ),
+                          horizontal: 12, vertical: 8),
                       decoration: BoxDecoration(
                         color: Colors.grey[50],
                         borderRadius: BorderRadius.circular(18),
@@ -446,13 +418,12 @@ class _DietPageState extends State<DietPage> {
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // 🔥 ICON BOX
+                            // Icon Box
                             Container(
                               padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
-                                color: _getMealColor(
-                                  data['type'],
-                                ).withOpacity(0.15),
+                                color: _getMealColor(data['type'])
+                                    .withOpacity(0.15),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Icon(
@@ -461,18 +432,16 @@ class _DietPageState extends State<DietPage> {
                                 size: 26,
                               ),
                             ),
-
                             const SizedBox(width: 12),
 
-                            // 🔥 CONTENT
+                            // Content
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  // TITLE + STATUS
                                   Row(
                                     mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
+                                        MainAxisAlignment.spaceBetween,
                                     children: [
                                       Expanded(
                                         child: Text(
@@ -484,21 +453,14 @@ class _DietPageState extends State<DietPage> {
                                         ),
                                       ),
                                       _buildStatusBadge(
-                                        data['status'] ?? "planned",
-                                      ),
+                                          data['status'] ?? "planned"),
                                     ],
                                   ),
-
                                   const SizedBox(height: 6),
-
-                                  // TYPE + DATE + TIME
                                   Row(
                                     children: [
-                                      Icon(
-                                        Icons.schedule,
-                                        size: 14,
-                                        color: Colors.grey,
-                                      ),
+                                      const Icon(Icons.schedule,
+                                          size: 14, color: Colors.grey),
                                       const SizedBox(width: 4),
                                       Text(
                                         "${data['type']} • ${data['date']} • ${data['time']}",
@@ -509,51 +471,42 @@ class _DietPageState extends State<DietPage> {
                                       ),
                                     ],
                                   ),
-
                                   const SizedBox(height: 8),
-
-                                  // CALORIES + PROTEIN
                                   Row(
                                     children: [
                                       Container(
                                         padding: const EdgeInsets.symmetric(
-                                          horizontal: 8,
-                                          vertical: 4,
-                                        ),
+                                            horizontal: 8, vertical: 4),
                                         decoration: BoxDecoration(
-                                          color: Colors.orange.withOpacity(0.1),
-                                          borderRadius: BorderRadius.circular(
-                                            8,
-                                          ),
+                                          color:
+                                              Colors.orange.withOpacity(0.1),
+                                          borderRadius:
+                                              BorderRadius.circular(8),
                                         ),
                                         child: Text(
-                                          " ${data['calories'] ?? 0} kcal",
-                                          style: const TextStyle(fontSize: 12),
+                                          "${data['calories'] ?? 0} kcal",
+                                          style:
+                                              const TextStyle(fontSize: 12),
                                         ),
                                       ),
                                       const SizedBox(width: 8),
                                       Container(
                                         padding: const EdgeInsets.symmetric(
-                                          horizontal: 8,
-                                          vertical: 4,
-                                        ),
+                                            horizontal: 8, vertical: 4),
                                         decoration: BoxDecoration(
                                           color: Colors.blue.withOpacity(0.1),
-                                          borderRadius: BorderRadius.circular(
-                                            8,
-                                          ),
+                                          borderRadius:
+                                              BorderRadius.circular(8),
                                         ),
                                         child: Text(
-                                          " ${data['protein'] ?? 0} g",
-                                          style: const TextStyle(fontSize: 12),
+                                          "${data['protein'] ?? 0} g",
+                                          style:
+                                              const TextStyle(fontSize: 12),
                                         ),
                                       ),
                                     ],
                                   ),
-
                                   const SizedBox(height: 6),
-
-                                  // NOTE
                                   if (data['note'] != null &&
                                       data['note'].toString().isNotEmpty)
                                     Text(
@@ -568,33 +521,27 @@ class _DietPageState extends State<DietPage> {
                               ),
                             ),
 
-                            // 🔥 ACTION BUTTONS
+                            // Action Buttons
                             Column(
                               children: [
                                 IconButton(
-                                  icon: const Icon(
-                                    Icons.edit,
-                                    color: Colors.blue,
-                                  ),
+                                  icon: const Icon(Icons.edit,
+                                      color: Colors.blue),
                                   onPressed: () {
                                     showDialog(
                                       context: context,
-                                      builder: (context) {
-                                        return EditMealDialog(
-                                          service: service,
-                                          id: data.id,
-                                          existingType: data['type'],
-                                          existingItems: data['items'],
-                                        );
-                                      },
+                                      builder: (context) => EditMealDialog(
+                                        service: service,
+                                        id: data.id,
+                                        existingType: data['type'],
+                                        existingItems: data['items'],
+                                      ),
                                     );
                                   },
                                 ),
                                 IconButton(
-                                  icon: const Icon(
-                                    Icons.delete,
-                                    color: Colors.red,
-                                  ),
+                                  icon: const Icon(Icons.delete,
+                                      color: Colors.red),
                                   onPressed: () {
                                     service.deleteMeal(data.id);
                                   },
@@ -646,12 +593,10 @@ class _EditMealDialogState extends State<EditMealDialog> {
   @override
   void initState() {
     super.initState();
-
     itemsController = TextEditingController(text: widget.existingItems);
     calController = TextEditingController();
     proteinController = TextEditingController();
     noteController = TextEditingController();
-
     selectedType = widget.existingType;
   }
 
@@ -662,81 +607,53 @@ class _EditMealDialogState extends State<EditMealDialog> {
       content: SingleChildScrollView(
         child: Column(
           children: [
-            // TYPE
             DropdownButtonFormField<String>(
               value: selectedType,
               items: ["breakfast", "lunch", "dinner", "snack"]
-                  .map(
-                    (type) => DropdownMenuItem(value: type, child: Text(type)),
-              )
+                  .map((type) =>
+                      DropdownMenuItem(value: type, child: Text(type)))
                   .toList(),
-              onChanged: (value) {
-                setState(() {
-                  selectedType = value!;
-                });
-              },
+              onChanged: (value) => setState(() => selectedType = value!),
             ),
-
             const SizedBox(height: 10),
-
-            // ITEMS
             TextField(
               controller: itemsController,
               decoration: const InputDecoration(labelText: "Items"),
             ),
-
             const SizedBox(height: 10),
-
-            // CALORIES
             TextField(
               controller: calController,
               keyboardType: TextInputType.number,
               decoration: const InputDecoration(labelText: "Calories"),
             ),
-
             const SizedBox(height: 10),
-
-            // PROTEIN
             TextField(
               controller: proteinController,
               keyboardType: TextInputType.number,
               decoration: const InputDecoration(labelText: "Protein"),
             ),
-
             const SizedBox(height: 10),
-
-            // NOTE
             TextField(
               controller: noteController,
               decoration: const InputDecoration(labelText: "Note"),
             ),
-
             const SizedBox(height: 10),
-
-            // STATUS 🔥
             DropdownButtonFormField<String>(
               value: selectedStatus,
-              items: [
-                "planned",
-                "eaten",
-              ].map((s) => DropdownMenuItem(value: s, child: Text(s))).toList(),
-              onChanged: (value) {
-                setState(() {
-                  selectedStatus = value!;
-                });
-              },
+              items: ["planned", "eaten"]
+                  .map((s) => DropdownMenuItem(value: s, child: Text(s)))
+                  .toList(),
+              onChanged: (value) => setState(() => selectedStatus = value!),
               decoration: const InputDecoration(labelText: "Status"),
             ),
           ],
         ),
       ),
-
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
           child: const Text("Cancel"),
         ),
-
         ElevatedButton(
           onPressed: () {
             widget.service.updateMeal(
@@ -748,7 +665,6 @@ class _EditMealDialogState extends State<EditMealDialog> {
               noteController.text,
               selectedStatus,
             );
-
             Navigator.pop(context);
           },
           child: const Text("Update"),
@@ -781,15 +697,11 @@ class _AddMealDialogState extends State<AddMealDialog> {
           DropdownButton<String>(
             value: selectedType,
             items: ["breakfast", "lunch", "dinner", "snack"]
-                .map((type) => DropdownMenuItem(value: type, child: Text(type)))
+                .map((type) =>
+                    DropdownMenuItem(value: type, child: Text(type)))
                 .toList(),
-            onChanged: (value) {
-              setState(() {
-                selectedType = value!;
-              });
-            },
+            onChanged: (value) => setState(() => selectedType = value!),
           ),
-
           TextField(
             controller: itemsController,
             decoration: const InputDecoration(labelText: "Meal Items"),
@@ -801,7 +713,6 @@ class _AddMealDialogState extends State<AddMealDialog> {
           onPressed: () => Navigator.pop(context),
           child: const Text("Cancel"),
         ),
-
         ElevatedButton(
           onPressed: () {
             widget.service.addMeal(
@@ -809,12 +720,11 @@ class _AddMealDialogState extends State<AddMealDialog> {
               itemsController.text,
               DateTime.now().toString().split(" ")[0],
               TimeOfDay.now().format(context),
-              0, // calories default
-              0, // protein default
+              0,
+              0,
               "",
-              "planned", // note default
+              "planned",
             );
-
             Navigator.pop(context);
           },
           child: const Text("Save"),
