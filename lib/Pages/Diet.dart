@@ -1,10 +1,11 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../Pages/add_meal_page.dart';
 import '../session.dart';
 
 class MealService {
-  final FirebaseFirestore firestore = FirebaseFirestore.instance;
+  static const String _mealsKey = 'meals_data';
 
   String get userId {
     if (Session().currentUsername == null ||
@@ -14,7 +15,18 @@ class MealService {
     return Session().currentUsername!;
   }
 
-  CollectionReference get meals => firestore.collection('meals');
+  Future<List<Map<String, dynamic>>> _getAllMeals() async {
+    final prefs = await SharedPreferences.getInstance();
+    final String? data = prefs.getString(_mealsKey);
+    if (data == null) return [];
+    final List<dynamic> decoded = jsonDecode(data);
+    return decoded.cast<Map<String, dynamic>>();
+  }
+
+  Future<void> _saveAllMeals(List<Map<String, dynamic>> meals) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_mealsKey, jsonEncode(meals));
+  }
 
   Future<void> addMeal(
     String type,
@@ -26,8 +38,10 @@ class MealService {
     String note,
     String status,
   ) async {
-    await meals.add({
-      'userId': Session().currentUsername,
+    final meals = await _getAllMeals();
+    meals.add({
+      'id': DateTime.now().millisecondsSinceEpoch.toString(),
+      'userId': userId,
       'type': type,
       'items': items,
       'calories': calories,
@@ -37,16 +51,18 @@ class MealService {
       'date': date,
       'time': time,
     });
+    await _saveAllMeals(meals);
   }
 
-  Stream<QuerySnapshot> getMeals() {
-    return meals
-        .where('userId', isEqualTo: Session().currentUsername)
-        .snapshots();
+  Future<List<Map<String, dynamic>>> getMeals() async {
+    final meals = await _getAllMeals();
+    return meals.where((m) => m['userId'] == userId).toList();
   }
 
   Future<void> deleteMeal(String id) async {
-    await meals.doc(id).delete();
+    final meals = await _getAllMeals();
+    meals.removeWhere((m) => m['id'] == id);
+    await _saveAllMeals(meals);
   }
 
   Future<void> updateMeal(
@@ -58,14 +74,20 @@ class MealService {
     String note,
     String status,
   ) async {
-    await meals.doc(id).update({
-      'type': type,
-      'items': items,
-      'calories': calories,
-      'protein': protein,
-      'note': note,
-      'status': status,
-    });
+    final meals = await _getAllMeals();
+    final index = meals.indexWhere((m) => m['id'] == id);
+    if (index != -1) {
+      meals[index] = {
+        ...meals[index],
+        'type': type,
+        'items': items,
+        'calories': calories,
+        'protein': protein,
+        'note': note,
+        'status': status,
+      };
+      await _saveAllMeals(meals);
+    }
   }
 }
 
@@ -77,6 +99,26 @@ class DietPage extends StatefulWidget {
 }
 
 class _DietPageState extends State<DietPage> {
+  final MealService service = MealService();
+  List<Map<String, dynamic>> _meals = [];
+  bool _isLoading = true;
+  String selectedCategory = "all";
+
+  @override
+  void initState() {
+    super.initState();
+    _loadMeals();
+  }
+
+  Future<void> _loadMeals() async {
+    setState(() => _isLoading = true);
+    final meals = await service.getMeals();
+    setState(() {
+      _meals = meals;
+      _isLoading = false;
+    });
+  }
+
   Widget _summaryItem(String emoji, int? value) {
     return Column(
       children: [
@@ -112,9 +154,6 @@ class _DietPageState extends State<DietPage> {
       ),
     );
   }
-
-  String selectedCategory = "all";
-  final MealService service = MealService();
 
   IconData _getMealIcon(String type) {
     switch (type) {
@@ -171,7 +210,7 @@ class _DietPageState extends State<DietPage> {
     );
   }
 
-  Map<String, int> getTodaySummary(List docs) {
+  Map<String, int> getTodaySummary(List<Map<String, dynamic>> docs) {
     String today = DateTime.now().toString().split(" ")[0];
     int breakfast = 0, lunch = 0, dinner = 0, snack = 0;
 
@@ -207,358 +246,343 @@ class _DietPageState extends State<DietPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("Diet & Meal Planner")),
-      body: StreamBuilder<QuerySnapshot>(
-        stream: service.getMeals(),
-        builder: (context, snapshot) {
-          if (snapshot.hasError) {
-            return Center(
-              child: Text(
-                snapshot.error.toString(),
-                style: const TextStyle(color: Colors.red),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _buildBody(),
+    );
+  }
+
+  Widget _buildBody() {
+    final docs = _meals;
+    final summary = getTodaySummary(docs);
+
+    if (docs.isEmpty) {
+      return Column(
+        children: [
+          const SizedBox(height: 16),
+          GestureDetector(
+            onTap: () async {
+              await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => AddMealPage(service: service),
+                ),
+              );
+              _loadMeals();
+            },
+            child: Container(
+              width: 220,
+              margin: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.teal,
+                borderRadius: BorderRadius.circular(15),
               ),
-            );
-          }
-
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          final docs = snapshot.data!.docs;
-          final summary = getTodaySummary(docs);
-
-          if (docs.isEmpty) {
-            return Column(
-              children: [
-                const SizedBox(height: 16),
-                GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => AddMealPage(service: service),
-                      ),
-                    );
-                  },
-                  child: Container(
-                    width: 220,
-                    margin: const EdgeInsets.all(12),
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.teal,
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-                    child: const Row(
-                      children: [
-                        Icon(Icons.add, color: Colors.white),
-                        SizedBox(width: 10),
-                        Text(
-                          "Add New Meal",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
+              child: const Row(
+                children: [
+                  Icon(Icons.add, color: Colors.white),
+                  SizedBox(width: 10),
+                  Text(
+                    "Add New Meal",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
-                ),
-                const SizedBox(height: 40),
-                const Center(child: Text("No meals added yet")),
-              ],
-            );
-          }
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 40),
+          const Center(child: Text("No meals added yet")),
+        ],
+      );
+    }
 
-          return Column(
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "Hey ${Session().currentUsername ?? "User"} 👋",
-                      style: const TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      "Let's track your meals here",
-                      style: TextStyle(color: Colors.grey[600], fontSize: 13),
-                    ),
-                  ],
+              Text(
+                "Hey ${Session().currentUsername ?? "User"} 👋",
+                style: const TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 4),
+              Text(
+                "Let's track your meals here",
+                style: TextStyle(color: Colors.grey[600], fontSize: 13),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 10),
 
-              // Summary Card
-              Container(
-                margin: const EdgeInsets.all(12),
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.teal[50],
-                  borderRadius: BorderRadius.circular(18),
-                  border: Border.all(color: Colors.teal.shade100),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      "Today's Summary",
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        _summaryItem("Total", summary['total']),
-                        _summaryItem("Breakfast", summary['breakfast']),
-                        _summaryItem("Lunch", summary['lunch']),
-                        _summaryItem("Dinner", summary['dinner']),
-                      ],
-                    ),
-                  ],
+        // Summary Card
+        Container(
+          margin: const EdgeInsets.all(12),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.teal[50],
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: Colors.teal.shade100),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                "Today's Summary",
+                style: TextStyle(
+                  color: Colors.black,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(height: 16),
-
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    _categoryChip("all"),
-                    _categoryChip("breakfast"),
-                    _categoryChip("lunch"),
-                    _categoryChip("dinner"),
-                    _categoryChip("snack"),
-                  ],
-                ),
+              const SizedBox(height: 12),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  _summaryItem("Total", summary['total']),
+                  _summaryItem("Breakfast", summary['breakfast']),
+                  _summaryItem("Lunch", summary['lunch']),
+                  _summaryItem("Dinner", summary['dinner']),
+                ],
               ),
-              const SizedBox(height: 16),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
 
-              // Add Meal Button
-              Center(
-                child: GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => AddMealPage(service: service),
-                      ),
-                    );
-                  },
-                  child: Container(
-                    width: 200,
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 10, horizontal: 14),
-                    decoration: BoxDecoration(
-                      color: Colors.teal,
-                      borderRadius: BorderRadius.circular(25),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.teal.withOpacity(0.3),
-                          blurRadius: 8,
-                        ),
-                      ],
-                    ),
-                    child: const Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.add, color: Colors.white, size: 18),
-                        SizedBox(width: 6),
-                        Text(
-                          "Add Meal",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: [
+              _categoryChip("all"),
+              _categoryChip("breakfast"),
+              _categoryChip("lunch"),
+              _categoryChip("dinner"),
+              _categoryChip("snack"),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+
+        // Add Meal Button
+        Center(
+          child: GestureDetector(
+            onTap: () async {
+              await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => AddMealPage(service: service),
+                ),
+              );
+              _loadMeals();
+            },
+            child: Container(
+              width: 200,
+              padding:
+                  const EdgeInsets.symmetric(vertical: 10, horizontal: 14),
+              decoration: BoxDecoration(
+                color: Colors.teal,
+                borderRadius: BorderRadius.circular(25),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.teal.withOpacity(0.3),
+                    blurRadius: 8,
+                  ),
+                ],
+              ),
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.add, color: Colors.white, size: 18),
+                  SizedBox(width: 6),
+                  Text(
+                    "Add Meal",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
-                ),
+                ],
               ),
-              const SizedBox(height: 16),
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
 
-              // Meal List
-              Expanded(
-                child: ListView.builder(
-                  itemCount: docs.length,
-                  itemBuilder: (context, index) {
-                    var data = docs[index];
+        // Meal List
+        Expanded(
+          child: ListView.builder(
+            itemCount: docs.length,
+            itemBuilder: (context, index) {
+              var data = docs[index];
 
-                    if (selectedCategory != "all" &&
-                        data['type'] != selectedCategory) {
-                      return const SizedBox();
-                    }
+              if (selectedCategory != "all" &&
+                  data['type'] != selectedCategory) {
+                return const SizedBox();
+              }
 
-                    return Container(
-                      margin: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: Colors.grey[50],
-                        borderRadius: BorderRadius.circular(18),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
-                            blurRadius: 10,
-                            spreadRadius: 2,
-                          ),
-                        ],
+              return Container(
+                margin:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.grey[50],
+                  borderRadius: BorderRadius.circular(18),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 10,
+                      spreadRadius: 2,
+                    ),
+                  ],
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(14),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Icon Box
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: _getMealColor(data['type']).withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Icon(
+                          _getMealIcon(data['type']),
+                          color: _getMealColor(data['type']),
+                          size: 26,
+                        ),
                       ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(14),
-                        child: Row(
+                      const SizedBox(width: 12),
+
+                      // Content
+                      Expanded(
+                        child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // Icon Box
-                            Container(
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: _getMealColor(data['type'])
-                                    .withOpacity(0.15),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Icon(
-                                _getMealIcon(data['type']),
-                                color: _getMealColor(data['type']),
-                                size: 26,
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-
-                            // Content
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Expanded(
-                                        child: Text(
-                                          data['items'],
-                                          style: const TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ),
-                                      _buildStatusBadge(
-                                          data['status'] ?? "planned"),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 6),
-                                  Row(
-                                    children: [
-                                      const Icon(Icons.schedule,
-                                          size: 14, color: Colors.grey),
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        "${data['type']} • ${data['date']} • ${data['time']}",
-                                        style: TextStyle(
-                                          color: Colors.grey[600],
-                                          fontSize: 12,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Row(
-                                    children: [
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 8, vertical: 4),
-                                        decoration: BoxDecoration(
-                                          color:
-                                              Colors.orange.withOpacity(0.1),
-                                          borderRadius:
-                                              BorderRadius.circular(8),
-                                        ),
-                                        child: Text(
-                                          "${data['calories'] ?? 0} kcal",
-                                          style:
-                                              const TextStyle(fontSize: 12),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 8, vertical: 4),
-                                        decoration: BoxDecoration(
-                                          color: Colors.blue.withOpacity(0.1),
-                                          borderRadius:
-                                              BorderRadius.circular(8),
-                                        ),
-                                        child: Text(
-                                          "${data['protein'] ?? 0} g",
-                                          style:
-                                              const TextStyle(fontSize: 12),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 6),
-                                  if (data['note'] != null &&
-                                      data['note'].toString().isNotEmpty)
-                                    Text(
-                                      "📝 ${data['note']}",
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: Colors.grey[700],
-                                        fontStyle: FontStyle.italic,
-                                      ),
-                                    ),
-                                ],
-                              ),
-                            ),
-
-                            // Action Buttons
-                            Column(
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                IconButton(
-                                  icon: const Icon(Icons.edit,
-                                      color: Colors.blue),
-                                  onPressed: () {
-                                    showDialog(
-                                      context: context,
-                                      builder: (context) => EditMealDialog(
-                                        service: service,
-                                        id: data.id,
-                                        existingType: data['type'],
-                                        existingItems: data['items'],
-                                      ),
-                                    );
-                                  },
+                                Expanded(
+                                  child: Text(
+                                    data['items'],
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
                                 ),
-                                IconButton(
-                                  icon: const Icon(Icons.delete,
-                                      color: Colors.red),
-                                  onPressed: () {
-                                    service.deleteMeal(data.id);
-                                  },
+                                _buildStatusBadge(
+                                    data['status'] ?? "planned"),
+                              ],
+                            ),
+                            const SizedBox(height: 6),
+                            Row(
+                              children: [
+                                const Icon(Icons.schedule,
+                                    size: 14, color: Colors.grey),
+                                const SizedBox(width: 4),
+                                Text(
+                                  "${data['type']} • ${data['date']} • ${data['time']}",
+                                  style: TextStyle(
+                                    color: Colors.grey[600],
+                                    fontSize: 12,
+                                  ),
                                 ),
                               ],
                             ),
+                            const SizedBox(height: 8),
+                            Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: Colors.orange.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Text(
+                                    "${data['calories'] ?? 0} kcal",
+                                    style: const TextStyle(fontSize: 12),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: Colors.blue.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Text(
+                                    "${data['protein'] ?? 0} g",
+                                    style: const TextStyle(fontSize: 12),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 6),
+                            if (data['note'] != null &&
+                                data['note'].toString().isNotEmpty)
+                              Text(
+                                "📝 ${data['note']}",
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey[700],
+                                  fontStyle: FontStyle.italic,
+                                ),
+                              ),
                           ],
                         ),
                       ),
-                    );
-                  },
+
+                      // Action Buttons
+                      Column(
+                        children: [
+                          IconButton(
+                            icon:
+                                const Icon(Icons.edit, color: Colors.blue),
+                            onPressed: () async {
+                              await showDialog(
+                                context: context,
+                                builder: (context) => EditMealDialog(
+                                  service: service,
+                                  id: data['id'],
+                                  existingType: data['type'],
+                                  existingItems: data['items'],
+                                ),
+                              );
+                              _loadMeals();
+                            },
+                          ),
+                          IconButton(
+                            icon:
+                                const Icon(Icons.delete, color: Colors.red),
+                            onPressed: () async {
+                              await service.deleteMeal(data['id']);
+                              _loadMeals();
+                            },
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
-          );
-        },
-      ),
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 }
@@ -655,8 +679,8 @@ class _EditMealDialogState extends State<EditMealDialog> {
           child: const Text("Cancel"),
         ),
         ElevatedButton(
-          onPressed: () {
-            widget.service.updateMeal(
+          onPressed: () async {
+            await widget.service.updateMeal(
               widget.id,
               selectedType,
               itemsController.text,
@@ -714,8 +738,8 @@ class _AddMealDialogState extends State<AddMealDialog> {
           child: const Text("Cancel"),
         ),
         ElevatedButton(
-          onPressed: () {
-            widget.service.addMeal(
+          onPressed: () async {
+            await widget.service.addMeal(
               selectedType,
               itemsController.text,
               DateTime.now().toString().split(" ")[0],
