@@ -114,360 +114,349 @@ class ProfilePage extends StatelessWidget {
 
                       return CustomScrollView(
                         slivers: [
-                      // ── Header ────────────────────────
-                      SliverToBoxAdapter(
-                      child: Container(
-                      color: AppColors.blue,
-                        padding:
-                        const EdgeInsets.fromLTRB(24, 56, 24, 28),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              mainAxisAlignment:
-                              MainAxisAlignment.spaceBetween,
-                              children: [
-                                // Avatar
-                                Container(
-                                  width: 64,
-                                  height: 64,
-                                  decoration: BoxDecoration(
-                                    color: AppColors.greenLight,
-                                    borderRadius:
-                                    BorderRadius.circular(20),
+                          // ── Header ────────────────────────
+                          SliverToBoxAdapter(
+                            child: Container(
+                              color: AppColors.blue,
+                              padding:
+                              const EdgeInsets.fromLTRB(24, 56, 24, 28),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      // Avatar
+                                      Container(
+                                        width: 64,
+                                        height: 64,
+                                        decoration: BoxDecoration(
+                                          color: AppColors.greenLight,
+                                          borderRadius:
+                                          BorderRadius.circular(20),
+                                        ),
+                                        child: const Icon(Icons.person_rounded,
+                                            color: AppColors.greenDark,
+                                            size: 32),
+                                      ),
+                                      // Action buttons
+                                      Row(
+                                        children: [
+                                          // Activity bell
+                                          GestureDetector(
+                                            onTap: () => Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                  builder: (_) => ActivityPage(
+                                                      username: username)),
+                                            ),
+                                            child: Container(
+                                              padding: const EdgeInsets.all(10),
+                                              decoration: BoxDecoration(
+                                                color: Colors.white
+                                                    .withOpacity(0.15),
+                                                borderRadius:
+                                                BorderRadius.circular(12),
+                                              ),
+                                              child: const Icon(
+                                                  Icons.bar_chart_rounded,
+                                                  color: AppColors.white,
+                                                  size: 20),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 10),
+                                          // Logout
+                                          GestureDetector(
+                                            onTap: () async {
+                                              await FirebaseAuth.instance
+                                                  .signOut();
+                                              Navigator.pushAndRemoveUntil(
+                                                context,
+                                                MaterialPageRoute(
+                                                    builder: (_) =>
+                                                    const auth_login
+                                                        .LoginPage()),
+                                                    (route) => false,
+                                              );
+                                            },
+                                            child: Container(
+                                              padding:
+                                              const EdgeInsets.symmetric(
+                                                  horizontal: 14,
+                                                  vertical: 8),
+                                              decoration: BoxDecoration(
+                                                color: Colors.white
+                                                    .withOpacity(0.15),
+                                                borderRadius:
+                                                BorderRadius.circular(12),
+                                              ),
+                                              child: const Row(
+                                                children: [
+                                                  Icon(Icons.logout_rounded,
+                                                      color: AppColors.white,
+                                                      size: 16),
+                                                  SizedBox(width: 6),
+                                                  Text('Logout',
+                                                      style: TextStyle(
+                                                          color: AppColors.white,
+                                                          fontSize: 13,
+                                                          fontWeight:
+                                                          FontWeight.w600)),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
                                   ),
-                                  child: const Icon(Icons.person_rounded,
-                                      color: AppColors.greenDark,
-                                      size: 32),
-                                ),
-                                // Action buttons
-                                Row(
-                                  children: [
-                                    // Activity bell
-                                    GestureDetector(
-                                      onTap: () => Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                            builder: (_) => ActivityPage(
-                                                username: username)),
-                                      ),
-                                      child: Container(
-                                        padding: const EdgeInsets.all(10),
-                                        decoration: BoxDecoration(
-                                          color: Colors.white
-                                              .withOpacity(0.15),
-                                          borderRadius:
-                                          BorderRadius.circular(12),
-                                        ),
-                                        child: const Icon(
-                                            Icons.bar_chart_rounded,
-                                            color: AppColors.white,
-                                            size: 20),
-                                      ),
+                                  const SizedBox(height: 16),
+                                  Text(displayName,
+                                      style: const TextStyle(
+                                        color: AppColors.white,
+                                        fontSize: 22,
+                                        fontWeight: FontWeight.w700,
+                                        letterSpacing: -0.5,
+                                      )),
+                                  const SizedBox(height: 4),
+                                  Row(
+                                    children: [
+                                      const Icon(Icons.location_on_rounded,
+                                          color: Colors.white54, size: 14),
+                                      const SizedBox(width: 4),
+                                      Text(displayCity,
+                                          style: const TextStyle(
+                                              color: Colors.white54,
+                                              fontSize: 13)),
+                                      const SizedBox(width: 12),
+                                      const Icon(Icons.flag_rounded,
+                                          color: Colors.white54, size: 14),
+                                      const SizedBox(width: 4),
+                                      Text(displayGoal,
+                                          style: const TextStyle(
+                                              color: Colors.white54,
+                                              fontSize: 13)),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+
+                          // ── Body ──────────────────────────
+                          SliverToBoxAdapter(
+                            child: Padding(
+                              padding: const EdgeInsets.all(20),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // Stats
+                                  Row(children: [
+                                    _statTile('Steps', '$totalSteps',
+                                        Icons.directions_walk_rounded,
+                                        const Color(0xFF5C7C8A)),
+                                    const SizedBox(width: 12),
+                                    _statTile('Burned', '${totalBurned}kcal',
+                                        Icons.local_fire_department_rounded,
+                                        const Color(0xFFE07A5F)),
+                                  ]),
+                                  const SizedBox(height: 12),
+                                  Row(children: [
+                                    _statTile('Gained', '${totalGained}kcal',
+                                        Icons.restaurant_rounded,
+                                        const Color(0xFF6FBF9F)),
+                                    const SizedBox(width: 12),
+                                    _statTile('Health', '$healthScore/100',
+                                        Icons.favorite_rounded,
+                                        const Color(0xFFBF6F6F)),
+                                  ]),
+
+                                  const SizedBox(height: 24),
+
+                                  // ── Hydration ─────────────
+                                  const Text('Hydration',
+                                      style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w700,
+                                          color: AppColors.textPrimary,
+                                          letterSpacing: -0.3)),
+                                  const SizedBox(height: 12),
+                                  Container(
+                                    padding: const EdgeInsets.all(20),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.white,
+                                      borderRadius: BorderRadius.circular(20),
                                     ),
-                                    const SizedBox(width: 10),
-                                    // Logout
-                                    GestureDetector(
-                                      onTap: () async {
-                                        await FirebaseAuth.instance
-                                            .signOut();
-                                        Navigator.pushAndRemoveUntil(
-                                          context,
-                                          MaterialPageRoute(
-                                              builder: (_) =>
-                                              const auth_login
-                                                  .LoginPage()),
-                                              (route) => false,
-                                        );
-                                      },
-                                      child: Container(
-                                        padding:
-                                        const EdgeInsets.symmetric(
-                                            horizontal: 14,
-                                            vertical: 8),
-                                        decoration: BoxDecoration(
-                                          color: Colors.white
-                                              .withOpacity(0.15),
-                                          borderRadius:
-                                          BorderRadius.circular(12),
-                                        ),
-                                        child: const Row(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
                                           children: [
-                                            Icon(Icons.logout_rounded,
-                                                color: AppColors.white,
-                                                size: 16),
-                                            SizedBox(width: 6),
-                                            Text('Logout',
-                                                style: TextStyle(
-                                                    color: AppColors.white,
-                                                    fontSize: 13,
-                                                    fontWeight:
-                                                    FontWeight.w600)),
+                                            Container(
+                                              padding: const EdgeInsets.all(10),
+                                              decoration: BoxDecoration(
+                                                color:
+                                                const Color(0xFFDCEEF5),
+                                                borderRadius:
+                                                BorderRadius.circular(12),
+                                              ),
+                                              child: const Icon(
+                                                  Icons.water_drop_rounded,
+                                                  color: Color(0xFF5C7C8A),
+                                                  size: 20),
+                                            ),
+                                            const SizedBox(width: 14),
+                                            Column(
+                                              crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                              children: [
+                                                Text('$water ml',
+                                                    style: const TextStyle(
+                                                        fontSize: 20,
+                                                        fontWeight:
+                                                        FontWeight.w700,
+                                                        color: AppColors
+                                                            .textPrimary)),
+                                                const Text(
+                                                    'of 2000 ml daily goal',
+                                                    style: TextStyle(
+                                                        color: AppColors
+                                                            .textSecondary,
+                                                        fontSize: 12)),
+                                              ],
+                                            ),
+                                            const Spacer(),
+                                            Text(
+                                              '${((water / 2000) * 100).clamp(0, 100).toInt()}%',
+                                              style: const TextStyle(
+                                                  color: AppColors.blue,
+                                                  fontWeight: FontWeight.w700,
+                                                  fontSize: 16),
+                                            ),
                                           ],
                                         ),
-                                      ),
+                                        const SizedBox(height: 14),
+                                        ClipRRect(
+                                          borderRadius:
+                                          BorderRadius.circular(6),
+                                          child: LinearProgressIndicator(
+                                            value:
+                                            (water / 2000).clamp(0, 1),
+                                            minHeight: 6,
+                                            backgroundColor:
+                                            AppColors.inputField,
+
+                                          ),
+                                        ),
+                                        const SizedBox(height: 16),
+                                        Row(
+                                          children: [
+                                            Expanded(
+                                              child: _WaterButton(
+                                                imagePath:
+                                                'assets/images/GLASS.png',
+                                                label: '+200 ml',
+                                                onTap: () async {
+                                                  await userProfileRef.set(
+                                                    {'water': FieldValue.increment(200)},
+                                                    SetOptions(merge: true),
+                                                  );
+                                                  await showWaterNotification(200);
+                                                },
+                                              ),
+                                            ),
+                                            const SizedBox(width: 12),
+                                            Expanded(
+                                              child: _WaterButton(
+                                                imagePath:
+                                                'assets/images/JUG.png',
+                                                label: '+500 ml',
+                                                onTap: () async {
+                                                  await userProfileRef.set(
+                                                    {'water': FieldValue.increment(500)},
+                                                    SetOptions(merge: true),
+                                                  );
+                                                  await showWaterNotification(500);
+                                                },
+                                                isPrimary: true,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
                                     ),
-                                  ],
-                                ),
-                              ],
+                                  ),
+
+                                  const SizedBox(height: 24),
+
+                                  // ── Profile completion ─────
+                                  const Text('Profile',
+                                      style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w700,
+                                          color: AppColors.textPrimary,
+                                          letterSpacing: -0.3)),
+                                  const SizedBox(height: 12),
+                                  Container(
+                                    padding: const EdgeInsets.all(20),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.white,
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    child: Column(
+                                      children: [
+                                        Row(
+                                          mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            const Text('Completion',
+                                                style: TextStyle(
+                                                    color:
+                                                    AppColors.textSecondary,
+                                                    fontSize: 13)),
+                                            Text('$percent%',
+                                                style: const TextStyle(
+                                                    color: AppColors.greenDark,
+                                                    fontWeight: FontWeight.w700,
+                                                    fontSize: 13)),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 10),
+                                        ClipRRect(
+                                          borderRadius:
+                                          BorderRadius.circular(6),
+                                          child: LinearProgressIndicator(
+                                            value: percent / 100,
+                                            minHeight: 6,
+                                            backgroundColor:
+                                            AppColors.inputField,
+
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+
+                                  const SizedBox(height: 16),
+
+                                  _actionTile(
+                                    icon: Icons.edit_rounded,
+                                    label: 'Edit Profile',
+                                    onTap: () => Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (_) => EditProfilePage(
+                                              username: username)),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 32),
+                                ],
+                              ),
                             ),
-                            const SizedBox(height: 16),
-                            Text(displayName,
-                                style: const TextStyle(
-                                  color: AppColors.white,
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.w700,
-                                  letterSpacing: -0.5,
-                                )),
-                            const SizedBox(height: 4),
-                            Row(
-                              children: [
-                                const Icon(Icons.location_on_rounded,
-                                    color: Colors.white54, size: 14),
-                                const SizedBox(width: 4),
-                                Text(displayCity,
-                                    style: const TextStyle(
-                                        color: Colors.white54,
-                                        fontSize: 13)),
-                                const SizedBox(width: 12),
-                                const Icon(Icons.flag_rounded,
-                                    color: Colors.white54, size: 14),
-                                const SizedBox(width: 4),
-                                Text(displayGoal,
-                                    style: const TextStyle(
-                                        color: Colors.white54,
-                                        fontSize: 13)),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                      ),
-
-                      // ── Body ──────────────────────────
-                      SliverToBoxAdapter(
-                      child: Padding(
-                      padding: const EdgeInsets.all(20),
-                      child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                      // Stats
-                      Row(children: [
-                      _statTile('Steps', '$totalSteps',
-                      Icons.directions_walk_rounded,
-                      const Color(0xFF5C7C8A)),
-                      const SizedBox(width: 12),
-                      _statTile('Burned', '${totalBurned}kcal',
-                      Icons.local_fire_department_rounded,
-                      const Color(0xFFE07A5F)),
-                      ]),
-                      const SizedBox(height: 12),
-                      Row(children: [
-                      _statTile('Gained', '${totalGained}kcal',
-                      Icons.restaurant_rounded,
-                      const Color(0xFF6FBF9F)),
-                      const SizedBox(width: 12),
-                      _statTile('Health', '$healthScore/100',
-                      Icons.favorite_rounded,
-                      const Color(0xFFBF6F6F)),
-                      ]),
-
-                      const SizedBox(height: 24),
-
-                      // ── Hydration ─────────────
-                      const Text('Hydration',
-                      style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary,
-                      letterSpacing: -0.3)),
-                      const SizedBox(height: 12),
-                      Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                      color: AppColors.white,
-                      borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Column(
-                      crossAxisAlignment:
-                      CrossAxisAlignment.start,
-                      children: [
-                      Row(
-                      children: [
-                      Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                      color:
-                      const Color(0xFFDCEEF5),
-                      borderRadius:
-                      BorderRadius.circular(12),
-                      ),
-                      child: const Icon(
-                      Icons.water_drop_rounded,
-                      color: Color(0xFF5C7C8A),
-                      size: 20),
-                      ),
-                      const SizedBox(width: 14),
-                      Column(
-                      crossAxisAlignment:
-                      CrossAxisAlignment.start,
-                      children: [
-                      Text('$water ml',
-                      style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight:
-                      FontWeight.w700,
-                      color: AppColors
-                          .textPrimary)),
-                      const Text(
-                      'of 2000 ml daily goal',
-                      style: TextStyle(
-                      color: AppColors
-                          .textSecondary,
-                      fontSize: 12)),
-                      ],
-                      ),
-                      const Spacer(),
-                      Text(
-                      '${((water / 2000) * 100).clamp(0, 100).toInt()}%',
-                      style: const TextStyle(
-                      color: AppColors.blue,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 16),
-                      ),
-                      ],
-                      ),
-                      const SizedBox(height: 14),
-                      ClipRRect(
-                      borderRadius:
-                      BorderRadius.circular(6),
-                      child: LinearProgressIndicator(
-                      value:
-                      (water / 2000).clamp(0, 1),
-                      minHeight: 6,
-                      backgroundColor:
-                      AppColors.inputField,
-
-                      ),
-                      ),
-                      const SizedBox(height: 16),
-                      Row(
-                      children: [
-                      Expanded(
-                      child: _WaterButton(
-                      imagePath:
-                      'assets/images/GLASS.png',
-                      label: '+200 ml',
-                      onTap: () async {
-                      await userProfileRef.set(
-                      {'water': FieldValue.increment(200)},
-                      SetOptions(merge: true),
-                      );
-                      await showWaterNotification(200);
-                      },
-                      ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                      child: _WaterButton(
-                      imagePath:
-                      'assets/images/JUG.png',
-                      label: '+500 ml',
-                      onTap: () async {
-                      await userProfileRef.set(
-                      {'water': FieldValue.increment(500)},
-                      SetOptions(merge: true),
-                      );
-                      await showWaterNotification(500);
-                      },
-                      isPrimary: true,
-                      ),
-                      ),
-                      ],
-                      ),
-                      ],
-                      ),
-                      ),
-
-                      const SizedBox(height: 24),
-
-                      // ── Profile completion ─────
-                      const Text('Profile',
-                      style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary,
-                      letterSpacing: -0.3)),
-                      const SizedBox(height: 12),
-                      Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                      color: AppColors.white,
-                      borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Column(
-                      children: [
-                      Row(
-                      mainAxisAlignment:
-                      MainAxisAlignment.spaceBetween,
-                      children: [
-                      const Text('Completion',
-                      style: TextStyle(
-                      color:
-                      AppColors.textSecondary,
-                      fontSize: 13)),
-                      Text('$percent%',
-                      style: const TextStyle(
-                      color: AppColors.greenDark,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 13)),
-                      ],
-                      ),
-                      const SizedBox(height: 10),
-                      ClipRRect(
-                      borderRadius:
-                      BorderRadius.circular(6),
-                      child: LinearProgressIndicator(
-                      value: percent / 100,
-                      minHeight: 6,
-                      backgroundColor:
-                      AppColors.inputField,
-
-                      ),
-                      ),
-                      ],
-                      ),
-                      ),
-
-                      const SizedBox(height: 16),
-
-                      _actionTile(
-                      icon: Icons.edit_rounded,
-                      label: 'Edit Profile',
-                      onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                      builder: (_) => EditProfilePage(
-                      username: username)),
-                      ),
-                      ),
-                      const SizedBox(height: 10),
-                      _actionTile(
-                      icon: Icons.notifications_rounded,
-                      label: 'Notifications',
-                      onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                      builder: (_) => NotificationPage(
-                      username: username)),
-                      ),
-                      ),
-                      const SizedBox(height: 32),
-                      ],
-                      ),
-                      ),
-                      ),
-                      ],
+                          ),
+                        ],
                       );
                     },
                   );
@@ -614,19 +603,21 @@ class _EditProfilePageState extends State<EditProfilePage> {
   final _profileRef = FirebaseFirestore.instance.collection('user_profiles');
   final _usersRef   = FirebaseFirestore.instance.collection('users');
 
-  final fields = ["name","age","gender","weight","height","goal","city","phone"];
-  // final fieldLabels = {
-  //   "name"  : "Full Name",
-  //   "age"   : "Age",
-  //   "gender": "Gender",
-  //   "weight": "Weight (kg)",
-  //   "height": "Height (cm)",
-  //   "goal"  : "Fitness Goal",
-  //   "city"  : "City",
-  //   "phone" : "Phone Number",
-  // };
+  final fields = [
+    "name","age","gender","weight","height","goal","city","phone"
+  ];
 
-  // ✅ ADDED LABELS (no logic change)
+  final fieldLabels = {
+    "name": "Full Name",
+    "age": "Age",
+    "gender": "Gender",
+    "weight": "Weight (kg)",
+    "height": "Height (cm)",
+    "goal": "Fitness Goal",
+    "city": "City",
+    "phone": "Phone Number",
+  };
+
   Map<String, TextEditingController> controllers = {};
 
   @override
