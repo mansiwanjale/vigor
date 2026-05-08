@@ -11,8 +11,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vigor/Auth/login_page.dart' as auth_login;
 import 'package:vigor/Pages/Notifications.dart';
 import '../main.dart';
-import 'package:share_plus/share_plus.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Avatar preset model
@@ -35,58 +33,40 @@ class AvatarPreset {
 
 const List<AvatarPreset> kAvatarPresets = [
   AvatarPreset(
-      id: 'runner',
-      label: 'Runner',
-      bgColor: Color(0xFFDCEEF5),
-      shirtColor: Color(0xFF5C7C8A),
+      id: 'runner', label: 'Runner',
+      bgColor: Color(0xFFDCEEF5), shirtColor: Color(0xFF5C7C8A),
       icon: Icons.directions_run_rounded),
   AvatarPreset(
-      id: 'lifter',
-      label: 'Lifter',
-      bgColor: Color(0xFFFCE4EC),
-      shirtColor: Color(0xFFE07A5F),
+      id: 'lifter', label: 'Lifter',
+      bgColor: Color(0xFFFCE4EC), shirtColor: Color(0xFFE07A5F),
       icon: Icons.fitness_center_rounded),
   AvatarPreset(
-      id: 'yogi',
-      label: 'Yogi',
-      bgColor: Color(0xFFE8F5E9),
-      shirtColor: Color(0xFF6FBF9F),
+      id: 'yogi', label: 'Yogi',
+      bgColor: Color(0xFFE8F5E9), shirtColor: Color(0xFF6FBF9F),
       icon: Icons.self_improvement_rounded),
   AvatarPreset(
-      id: 'cyclist',
-      label: 'Cyclist',
-      bgColor: Color(0xFFFFF8E1),
-      shirtColor: Color(0xFFFFB300),
+      id: 'cyclist', label: 'Cyclist',
+      bgColor: Color(0xFFFFF8E1), shirtColor: Color(0xFFFFB300),
       icon: Icons.directions_bike_rounded),
   AvatarPreset(
-      id: 'swimmer',
-      label: 'Swimmer',
-      bgColor: Color(0xFFE3F2FD),
-      shirtColor: Color(0xFF1976D2),
+      id: 'swimmer', label: 'Swimmer',
+      bgColor: Color(0xFFE3F2FD), shirtColor: Color(0xFF1976D2),
       icon: Icons.pool_rounded),
   AvatarPreset(
-      id: 'ninja',
-      label: 'Ninja',
-      bgColor: Color(0xFFEDE7F6),
-      shirtColor: Color(0xFF6A1B9A),
+      id: 'ninja', label: 'Ninja',
+      bgColor: Color(0xFFEDE7F6), shirtColor: Color(0xFF6A1B9A),
       icon: Icons.sports_martial_arts_rounded),
   AvatarPreset(
-      id: 'hiker',
-      label: 'Hiker',
-      bgColor: Color(0xFFF1F8E9),
-      shirtColor: Color(0xFF558B2F),
+      id: 'hiker', label: 'Hiker',
+      bgColor: Color(0xFFF1F8E9), shirtColor: Color(0xFF558B2F),
       icon: Icons.hiking_rounded),
   AvatarPreset(
-      id: 'boxer',
-      label: 'Boxer',
-      bgColor: Color(0xFFFFEBEE),
-      shirtColor: Color(0xFFC62828),
+      id: 'boxer', label: 'Boxer',
+      bgColor: Color(0xFFFFEBEE), shirtColor: Color(0xFFC62828),
       icon: Icons.sports_mma_rounded),
   AvatarPreset(
-      id: 'dancer',
-      label: 'Dancer',
-      bgColor: Color(0xFFFCE4EC),
-      shirtColor: Color(0xFFAD1457),
+      id: 'dancer', label: 'Dancer',
+      bgColor: Color(0xFFFCE4EC), shirtColor: Color(0xFFAD1457),
       icon: Icons.music_note_rounded),
 ];
 
@@ -100,10 +80,8 @@ AvatarPreset _defaultPresetForAge(int age, String goal) {
     return kAvatarPresets.firstWhere((p) => p.id == 'swimmer');
   if (g.contains('yoga') || g.contains('flex') || g.contains('stretch'))
     return kAvatarPresets.firstWhere((p) => p.id == 'yogi');
-  if (g.contains('muscle') ||
-      g.contains('strength') ||
-      g.contains('lift') ||
-      g.contains('bulk'))
+  if (g.contains('muscle') || g.contains('strength') ||
+      g.contains('lift') || g.contains('bulk'))
     return kAvatarPresets.firstWhere((p) => p.id == 'lifter');
   if (age < 18) return kAvatarPresets.firstWhere((p) => p.id == 'ninja');
   if (age < 30) return kAvatarPresets.firstWhere((p) => p.id == 'runner');
@@ -111,111 +89,42 @@ AvatarPreset _defaultPresetForAge(int age, String goal) {
   if (age < 60) return kAvatarPresets.firstWhere((p) => p.id == 'hiker');
   return kAvatarPresets.firstWhere((p) => p.id == 'yogi');
 }
-final VigorSettings vigorSettings = VigorSettings();
+
 // ─────────────────────────────────────────────────────────────────────────────
-// VigorSettings ChangeNotifier (singleton)
-// All settings are persisted in SharedPreferences and exposed via getters.
-// Dark mode drives the global theme via ChangeNotifierProvider in main.dart.
+// App-level settings notifier  (put this near the top of your main.dart too,
+// then pass vigorSettings down or use InheritedWidget / Provider)
 // ─────────────────────────────────────────────────────────────────────────────
 class VigorSettings extends ChangeNotifier {
-  bool _darkMode = false;
+  bool _darkMode   = false;
   bool _privacyMode = false;
-  String _units = 'Metric'; // 'Metric' | 'Imperial'
 
-  // Notification / tracking flags
-  bool _notifications = true;
-  bool _waterReminder = true;
-  bool _stepTracking = true;
-  bool _calorieAlerts = false;
-  bool _weeklyReport = true;
-
-  bool get darkMode => _darkMode;
+  bool get darkMode    => _darkMode;
   bool get privacyMode => _privacyMode;
-  String get units => _units;
 
-  bool get notifications => _notifications;
-  bool get waterReminder => _waterReminder;
-  bool get stepTracking => _stepTracking;
-  bool get calorieAlerts => _calorieAlerts;
-  bool get weeklyReport => _weeklyReport;
-
-  // Derived helpers
-  String get weightUnit => _units == 'Metric' ? 'kg' : 'lbs';
-  String get heightUnit => _units == 'Metric' ? 'cm' : 'ft';
-  String get distanceUnit => _units == 'Metric' ? 'km' : 'mi';
-  String get waterUnit => _units == 'Metric' ? 'ml' : 'fl oz';
-
-  VigorSettings() {
-    _load();
-  }
+  VigorSettings() { _load(); }
 
   Future<void> _load() async {
     final p = await SharedPreferences.getInstance();
-    _darkMode = p.getBool('darkMode') ?? false;
+    _darkMode    = p.getBool('darkMode')    ?? false;
     _privacyMode = p.getBool('privacyMode') ?? false;
-    _units = p.getString('units') ?? 'Metric';
-    _notifications = p.getBool('notifications') ?? true;
-    _waterReminder = p.getBool('waterReminder') ?? true;
-    _stepTracking = p.getBool('stepTracking') ?? true;
-    _calorieAlerts = p.getBool('calorieAlerts') ?? false;
-    _weeklyReport = p.getBool('weeklyReport') ?? true;
     notifyListeners();
-  }
-
-  Future<void> _save(String key, dynamic value) async {
-    final p = await SharedPreferences.getInstance();
-    if (value is bool) p.setBool(key, value);
-    if (value is String) p.setString(key, value);
   }
 
   Future<void> setDarkMode(bool v) async {
     _darkMode = v;
     notifyListeners();
-    _save('darkMode', v);
+    (await SharedPreferences.getInstance()).setBool('darkMode', v);
   }
 
   Future<void> setPrivacyMode(bool v) async {
     _privacyMode = v;
     notifyListeners();
-    _save('privacyMode', v);
-  }
-
-  Future<void> setUnits(String v) async {
-    _units = v;
-    notifyListeners();
-    _save('units', v);
-  }
-
-  Future<void> setNotifications(bool v) async {
-    _notifications = v;
-    notifyListeners();
-    _save('notifications', v);
-  }
-
-  Future<void> setWaterReminder(bool v) async {
-    _waterReminder = v;
-    notifyListeners();
-    _save('waterReminder', v);
-  }
-
-  Future<void> setStepTracking(bool v) async {
-    _stepTracking = v;
-    notifyListeners();
-    _save('stepTracking', v);
-  }
-
-  Future<void> setCalorieAlerts(bool v) async {
-    _calorieAlerts = v;
-    notifyListeners();
-    _save('calorieAlerts', v);
-  }
-
-  Future<void> setWeeklyReport(bool v) async {
-    _weeklyReport = v;
-    notifyListeners();
-    _save('weeklyReport', v);
+    (await SharedPreferences.getInstance()).setBool('privacyMode', v);
   }
 }
+
+// Singleton so ProfilePage and SettingsPage share the same instance
+final vigorSettings = VigorSettings();
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Settings Page
@@ -229,47 +138,51 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-  final _waterGoalCtrl = TextEditingController();
-  final _stepGoalCtrl = TextEditingController();
+  bool _notifications = true;
+  bool _waterReminder = true;
+  bool _stepTracking  = true;
+  bool _calorieAlerts = false;
+  bool _weeklyReport  = true;
+  String _units = 'Metric';
 
-  // We read/write directly from/to the VigorSettings singleton
-  // so the state is always in sync across the app.
+  final _waterGoalCtrl = TextEditingController();
+  final _stepGoalCtrl  = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    _loadGoals();
-    vigorSettings.addListener(_rebuild);
+    _loadPrefs();
+    vigorSettings.addListener(_onSettingsChange);
   }
 
-  void _rebuild() {
-    if (mounted) setState(() {});
-  }
+  void _onSettingsChange() { if (mounted) setState(() {}); }
 
   @override
   void dispose() {
-    vigorSettings.removeListener(_rebuild);
+    vigorSettings.removeListener(_onSettingsChange);
     _waterGoalCtrl.dispose();
     _stepGoalCtrl.dispose();
     super.dispose();
   }
 
-  Future<void> _loadGoals() async {
+  Future<void> _loadPrefs() async {
     final prefs = await SharedPreferences.getInstance();
-    final doc = await FirebaseFirestore.instance
-        .collection('user_profiles')
-        .doc(widget.username)
-        .get();
-    final data = doc.data() ?? {};
-    if (!mounted) return;
     setState(() {
-      _stepGoalCtrl.text =
-          (data['stepGoal'] ?? prefs.getString('stepGoal') ?? '6000')
-              .toString();
-      _waterGoalCtrl.text =
-          (data['waterGoal'] ?? prefs.getString('waterGoal') ?? '2000')
-              .toString();
+      _notifications = prefs.getBool('notifications') ?? true;
+      _waterReminder = prefs.getBool('waterReminder') ?? true;
+      _stepTracking  = prefs.getBool('stepTracking')  ?? true;
+      _calorieAlerts = prefs.getBool('calorieAlerts') ?? false;
+      _weeklyReport  = prefs.getBool('weeklyReport')  ?? true;
+      _units         = prefs.getString('units')       ?? 'Metric';
+      _waterGoalCtrl.text = prefs.getString('waterGoal') ?? '2000';
+      _stepGoalCtrl.text  = prefs.getString('stepGoal')  ?? '6000';
     });
+  }
+
+  Future<void> _savePref(String key, dynamic value) async {
+    final prefs = await SharedPreferences.getInstance();
+    if (value is bool)   prefs.setBool(key, value);
+    if (value is String) prefs.setString(key, value);
   }
 
   Future<void> _saveGoalsToFirestore() async {
@@ -277,18 +190,15 @@ class _SettingsPageState extends State<SettingsPage> {
         .collection('user_profiles')
         .doc(widget.username);
     await ref.set({
-      'stepGoal': int.tryParse(_stepGoalCtrl.text) ?? 6000,
+      'stepGoal':  int.tryParse(_stepGoalCtrl.text)  ?? 6000,
       'waterGoal': int.tryParse(_waterGoalCtrl.text) ?? 2000,
     }, SetOptions(merge: true));
-    final prefs = await SharedPreferences.getInstance();
-    prefs.setString('stepGoal', _stepGoalCtrl.text);
-    prefs.setString('waterGoal', _waterGoalCtrl.text);
+    await _savePref('stepGoal',  _stepGoalCtrl.text);
+    await _savePref('waterGoal', _waterGoalCtrl.text);
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('Goals saved! ✓'),
-            duration: Duration(seconds: 2),
-            backgroundColor: Color(0xFF4CAF8E)),
+        const SnackBar(content: Text('Goals saved!'),
+            duration: Duration(seconds: 2)),
       );
     }
   }
@@ -297,11 +207,9 @@ class _SettingsPageState extends State<SettingsPage> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        backgroundColor: _card,
-        title: Text('Clear Activity Data',
-            style: TextStyle(color: _text, fontWeight: FontWeight.w700)),
-        content: Text("This will reset today's water intake. Are you sure?",
-            style: TextStyle(color: _sub)),
+        title: const Text('Clear Activity Data'),
+        content: const Text(
+            "This will reset today's water intake. Are you sure?"),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(context, false),
@@ -320,81 +228,27 @@ class _SettingsPageState extends State<SettingsPage> {
           .set({'water': 0}, SetOptions(merge: true));
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text('Activity data cleared.'),
+          const SnackBar(content: Text('Activity data cleared.'),
               duration: Duration(seconds: 2)),
         );
       }
     }
   }
 
-  Future<void> _deleteAccount() async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (_) => AlertDialog(
-        backgroundColor: _card,
-        title: Text('Delete Account',
-            style: TextStyle(color: Colors.red, fontWeight: FontWeight.w700)),
-        content: Text(
-            'This will permanently delete your account and all data. This cannot be undone.',
-            style: TextStyle(color: _sub)),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('Cancel')),
-          TextButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: const Text('Delete',
-                  style: TextStyle(color: Colors.red))),
-        ],
-      ),
-    );
-    if (confirmed == true) {
-      try {
-        await FirebaseFirestore.instance
-            .collection('user_profiles')
-            .doc(widget.username)
-            .delete();
-        await FirebaseAuth.instance.currentUser?.delete();
-        if (mounted) {
-          Navigator.pushAndRemoveUntil(
-              context,
-              MaterialPageRoute(
-                  builder: (_) => const auth_login.LoginPage()),
-                  (r) => false);
-        }
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context)
-              .showSnackBar(SnackBar(content: Text('Error: $e')));
-        }
-      }
-    }
-  }
+  // ── Theme-aware colors ──
+  Color get _bg    => vigorSettings.darkMode ? const Color(0xFF1A1A2E) : AppColors.background;
+  Color get _card  => vigorSettings.darkMode ? const Color(0xFF252540) : AppColors.white;
+  Color get _text  => vigorSettings.darkMode ? Colors.white : AppColors.textPrimary;
+  Color get _sub   => vigorSettings.darkMode ? Colors.white54 : AppColors.textSecondary;
 
-  // ── Theme helpers ─────────────────────────────────────────
-  Color get _bg =>
-      vigorSettings.darkMode ? const Color(0xFF1A1A2E) : AppColors.background;
-  Color get _card =>
-      vigorSettings.darkMode ? const Color(0xFF252540) : AppColors.white;
-  Color get _text =>
-      vigorSettings.darkMode ? Colors.white : AppColors.textPrimary;
-  Color get _sub =>
-      vigorSettings.darkMode ? Colors.white54 : AppColors.textSecondary;
-  Color get _inputFill =>
-      vigorSettings.darkMode ? const Color(0xFF1A1A2E) : AppColors.background;
-
-  Widget _sectionHeader(String t) => Padding(
-    padding: const EdgeInsets.fromLTRB(4, 16, 0, 8),
+  Widget _sectionTitle(String t) => Padding(
+    padding: const EdgeInsets.fromLTRB(4, 8, 0, 8),
     child: Text(t,
-        style: TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.w800,
-            color: _sub,
-            letterSpacing: 1.1)),
+        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700,
+            color: _sub, letterSpacing: 0.8)),
   );
 
-  Widget _tile({
+  Widget _settingsTile({
     required IconData icon,
     required String label,
     required String sublabel,
@@ -406,23 +260,20 @@ class _SettingsPageState extends State<SettingsPage> {
         onTap: onTap,
         child: Container(
           margin: const EdgeInsets.only(bottom: 2),
-          decoration: BoxDecoration(
-              color: _card, borderRadius: BorderRadius.circular(14)),
+          decoration: BoxDecoration(color: _card,
+              borderRadius: BorderRadius.circular(14)),
           child: ListTile(
             contentPadding:
             const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
             leading: Container(
               padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                  color: color.withOpacity(0.12),
+              decoration: BoxDecoration(color: color.withOpacity(0.12),
                   borderRadius: BorderRadius.circular(10)),
               child: Icon(icon, color: color, size: 18),
             ),
             title: Text(label,
-                style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: _text)),
+                style: TextStyle(fontSize: 14,
+                    fontWeight: FontWeight.w600, color: _text)),
             subtitle: Text(sublabel,
                 style: TextStyle(fontSize: 11, color: _sub)),
             trailing: trailing,
@@ -430,153 +281,150 @@ class _SettingsPageState extends State<SettingsPage> {
         ),
       );
 
-  Widget _buildUnitToggle() {
-    final isMetric = vigorSettings.units == 'Metric';
-    return GestureDetector(
-      onTap: () {
-        vigorSettings.setUnits(isMetric ? 'Imperial' : 'Metric');
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        decoration: BoxDecoration(
-          color: const Color(0xFF6FBF9F).withOpacity(0.15),
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Text(vigorSettings.units,
-            style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
-                color: Color(0xFF6FBF9F))),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final isDark = vigorSettings.darkMode;
     final isPrivate = vigorSettings.privacyMode;
-    final unitLabel = vigorSettings.units == 'Metric'
-        ? 'kg · cm · ml · km'
-        : 'lbs · ft · fl oz · mi';
 
     return Scaffold(
       backgroundColor: _bg,
       appBar: AppBar(
         title: Text('Settings',
-            style: TextStyle(
-                color: _text, fontWeight: FontWeight.w700, fontSize: 17)),
+            style: TextStyle(color: _text,
+                fontWeight: FontWeight.w700, fontSize: 17)),
         backgroundColor: _bg,
         elevation: 0,
         iconTheme: IconThemeData(color: _text),
         centerTitle: true,
       ),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 4, 20, 40),
+        padding: const EdgeInsets.fromLTRB(20, 8, 20, 40),
         children: [
-          // ── Appearance ─────────────────────────────────────
-          _sectionHeader('APPEARANCE'),
-          _tile(
-            icon: isDark
-                ? Icons.light_mode_rounded
-                : Icons.dark_mode_rounded,
+
+          // ── Appearance ──
+          _sectionTitle('APPEARANCE'),
+          _settingsTile(
+            icon: isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
             label: isDark ? 'Light Mode' : 'Dark Mode',
-            sublabel: isDark
-                ? 'Switch to light theme'
-                : 'Switch to dark theme',
+            sublabel: isDark ? 'Switch to light theme' : 'Switch to dark theme',
             color: const Color(0xFF5C7C8A),
             trailing: Switch.adaptive(
               value: isDark,
               activeColor: AppColors.greenDark,
-              // setDarkMode calls notifyListeners() which updates
-              // the ChangeNotifierProvider in main.dart → rebuilds
-              // MaterialApp with the new themeMode. All pages respond.
               onChanged: (v) => vigorSettings.setDarkMode(v),
             ),
           ),
-          _tile(
+          _settingsTile(
             icon: Icons.straighten_rounded,
             label: 'Units',
-            sublabel: unitLabel,
+            sublabel: _units == 'Metric' ? 'kg, cm, ml' : 'lbs, ft, fl oz',
             color: const Color(0xFF6FBF9F),
-            trailing: _buildUnitToggle(),
+            trailing: GestureDetector(
+              onTap: () {
+                final next = _units == 'Metric' ? 'Imperial' : 'Metric';
+                setState(() => _units = next);
+                _savePref('units', next);
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF6FBF9F).withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(_units,
+                    style: const TextStyle(fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF6FBF9F))),
+              ),
+            ),
           ),
 
-          // ── Notifications ───────────────────────────────────
-          _sectionHeader('NOTIFICATIONS'),
-          _tile(
+          const SizedBox(height: 12),
+
+          // ── Notifications ──
+          _sectionTitle('NOTIFICATIONS'),
+          _settingsTile(
             icon: Icons.notifications_rounded,
             label: 'Push Notifications',
             sublabel: 'Workout reminders & updates',
             color: const Color(0xFFE07A5F),
             trailing: Switch.adaptive(
-              value: vigorSettings.notifications,
+              value: _notifications,
               activeColor: AppColors.greenDark,
-              onChanged: (v) => vigorSettings.setNotifications(v),
+              onChanged: (v) {
+                setState(() => _notifications = v);
+                _savePref('notifications', v);
+              },
             ),
           ),
-          _tile(
+          _settingsTile(
             icon: Icons.water_drop_rounded,
             label: 'Water Reminders',
-            // Show a hint when disabled
-            sublabel: vigorSettings.waterReminder
-                ? 'Get reminded to stay hydrated'
-                : 'Water notifications disabled',
+            sublabel: 'Get reminded to stay hydrated',
             color: const Color(0xFF5C7C8A),
             trailing: Switch.adaptive(
-              value: vigorSettings.waterReminder,
+              value: _waterReminder,
               activeColor: AppColors.greenDark,
-              onChanged: (v) => vigorSettings.setWaterReminder(v),
+              onChanged: (v) {
+                setState(() => _waterReminder = v);
+                _savePref('waterReminder', v);
+              },
             ),
           ),
-          _tile(
+          _settingsTile(
             icon: Icons.local_fire_department_rounded,
             label: 'Calorie Alerts',
-            sublabel: vigorSettings.calorieAlerts
-                ? 'Alert when daily target is exceeded'
-                : 'Calorie alerts disabled',
+            sublabel: 'Alert when daily target is exceeded',
             color: const Color(0xFFE07A5F),
             trailing: Switch.adaptive(
-              value: vigorSettings.calorieAlerts,
+              value: _calorieAlerts,
               activeColor: AppColors.greenDark,
-              onChanged: (v) => vigorSettings.setCalorieAlerts(v),
+              onChanged: (v) {
+                setState(() => _calorieAlerts = v);
+                _savePref('calorieAlerts', v);
+              },
             ),
           ),
-          _tile(
+          _settingsTile(
             icon: Icons.bar_chart_rounded,
             label: 'Weekly Report',
-            sublabel: vigorSettings.weeklyReport
-                ? 'Summary of your weekly activity'
-                : 'Weekly reports disabled',
+            sublabel: 'Summary of your weekly activity',
             color: const Color(0xFF6FBF9F),
             trailing: Switch.adaptive(
-              value: vigorSettings.weeklyReport,
+              value: _weeklyReport,
               activeColor: AppColors.greenDark,
-              onChanged: (v) => vigorSettings.setWeeklyReport(v),
+              onChanged: (v) {
+                setState(() => _weeklyReport = v);
+                _savePref('weeklyReport', v);
+              },
             ),
           ),
 
-          // ── Activity Tracking ───────────────────────────────
-          _sectionHeader('ACTIVITY TRACKING'),
-          _tile(
+          const SizedBox(height: 12),
+
+          // ── Activity Tracking ──
+          _sectionTitle('ACTIVITY TRACKING'),
+          _settingsTile(
             icon: Icons.directions_walk_rounded,
             label: 'Step Tracking',
-            sublabel: vigorSettings.stepTracking
-                ? 'Count steps using pedometer'
-                : 'Step tracking is OFF',
+            sublabel: 'Count steps using pedometer',
             color: const Color(0xFF6FBF9F),
             trailing: Switch.adaptive(
-              value: vigorSettings.stepTracking,
+              value: _stepTracking,
               activeColor: AppColors.greenDark,
-              onChanged: (v) => vigorSettings.setStepTracking(v),
+              onChanged: (v) {
+                setState(() => _stepTracking = v);
+                _savePref('stepTracking', v);
+              },
             ),
           ),
 
           // Daily goals card
-          const SizedBox(height: 4),
+          const SizedBox(height: 8),
           Container(
             padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-                color: _card, borderRadius: BorderRadius.circular(14)),
+            decoration: BoxDecoration(color: _card,
+                borderRadius: BorderRadius.circular(14)),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -590,52 +438,54 @@ class _SettingsPageState extends State<SettingsPage> {
                           color: Color(0xFF5C7C8A), size: 18)),
                   const SizedBox(width: 10),
                   Text('Daily Goals',
-                      style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                          color: _text)),
+                      style: TextStyle(fontSize: 14,
+                          fontWeight: FontWeight.w700, color: _text)),
                 ]),
                 const SizedBox(height: 14),
                 Row(children: [
-                  Expanded(
-                      child: TextField(
-                        controller: _stepGoalCtrl,
-                        keyboardType: TextInputType.number,
-                        style: TextStyle(color: _text, fontSize: 13),
-                        decoration: InputDecoration(
-                          labelText: 'Step Goal',
-                          prefixIcon: const Icon(Icons.directions_walk_rounded,
-                              size: 16, color: AppColors.textSecondary),
-                          labelStyle: TextStyle(color: _sub, fontSize: 12),
-                          filled: true,
-                          fillColor: _inputFill,
-                          border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                              borderSide: BorderSide.none),
-                          contentPadding: const EdgeInsets.symmetric(
-                              vertical: 12, horizontal: 12),
-                        ),
-                      )),
+                  Expanded(child: TextField(
+                    controller: _stepGoalCtrl,
+                    keyboardType: TextInputType.number,
+                    style: TextStyle(color: _text, fontSize: 13),
+                    decoration: InputDecoration(
+                      labelText: 'Step Goal',
+                      prefixIcon: const Icon(Icons.directions_walk_rounded,
+                          size: 16, color: AppColors.textSecondary),
+                      labelStyle: const TextStyle(
+                          color: AppColors.textSecondary, fontSize: 12),
+                      filled: true,
+                      fillColor: isDark
+                          ? const Color(0xFF1A1A2E)
+                          : AppColors.background,
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide.none),
+                      contentPadding: const EdgeInsets.symmetric(
+                          vertical: 12, horizontal: 12),
+                    ),
+                  )),
                   const SizedBox(width: 10),
-                  Expanded(
-                      child: TextField(
-                        controller: _waterGoalCtrl,
-                        keyboardType: TextInputType.number,
-                        style: TextStyle(color: _text, fontSize: 13),
-                        decoration: InputDecoration(
-                          labelText: 'Water Goal (${vigorSettings.waterUnit})',
-                          prefixIcon: const Icon(Icons.water_drop_rounded,
-                              size: 16, color: AppColors.textSecondary),
-                          labelStyle: TextStyle(color: _sub, fontSize: 12),
-                          filled: true,
-                          fillColor: _inputFill,
-                          border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                              borderSide: BorderSide.none),
-                          contentPadding: const EdgeInsets.symmetric(
-                              vertical: 12, horizontal: 12),
-                        ),
-                      )),
+                  Expanded(child: TextField(
+                    controller: _waterGoalCtrl,
+                    keyboardType: TextInputType.number,
+                    style: TextStyle(color: _text, fontSize: 13),
+                    decoration: InputDecoration(
+                      labelText: 'Water Goal (ml)',
+                      prefixIcon: const Icon(Icons.water_drop_rounded,
+                          size: 16, color: AppColors.textSecondary),
+                      labelStyle: const TextStyle(
+                          color: AppColors.textSecondary, fontSize: 12),
+                      filled: true,
+                      fillColor: isDark
+                          ? const Color(0xFF1A1A2E)
+                          : AppColors.background,
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide.none),
+                      contentPadding: const EdgeInsets.symmetric(
+                          vertical: 12, horizontal: 12),
+                    ),
+                  )),
                 ]),
                 const SizedBox(height: 12),
                 SizedBox(
@@ -649,24 +499,24 @@ class _SettingsPageState extends State<SettingsPage> {
                             borderRadius: BorderRadius.circular(10)),
                         elevation: 0),
                     child: const Text('Save Goals',
-                        style: TextStyle(
-                            color: AppColors.white,
-                            fontWeight: FontWeight.w700,
-                            fontSize: 13)),
+                        style: TextStyle(color: AppColors.white,
+                            fontWeight: FontWeight.w700, fontSize: 13)),
                   ),
                 ),
               ],
             ),
           ),
 
-          // ── Privacy & Security ──────────────────────────────
-          _sectionHeader('PRIVACY & SECURITY'),
-          _tile(
+          const SizedBox(height: 12),
+
+          // ── Privacy & Security ──
+          _sectionTitle('PRIVACY & SECURITY'),
+          _settingsTile(
             icon: Icons.lock_rounded,
             label: 'Privacy Mode',
             sublabel: isPrivate
                 ? 'Stats hidden — tap to reveal'
-                : 'Your stats are visible to you',
+                : 'Stats visible to you',
             color: const Color(0xFF9B8EA8),
             trailing: Switch.adaptive(
               value: isPrivate,
@@ -674,7 +524,7 @@ class _SettingsPageState extends State<SettingsPage> {
               onChanged: (v) => vigorSettings.setPrivacyMode(v),
             ),
           ),
-          _tile(
+          _settingsTile(
             icon: Icons.delete_outline_rounded,
             label: 'Clear Activity Data',
             sublabel: "Reset today's water intake",
@@ -684,136 +534,16 @@ class _SettingsPageState extends State<SettingsPage> {
             onTap: _clearActivityData,
           ),
 
-          // ── About ───────────────────────────────────────────
-          _sectionHeader('ABOUT'),
-          Container(
-            margin: const EdgeInsets.only(bottom: 2),
-            decoration: BoxDecoration(
-                color: _card, borderRadius: BorderRadius.circular(14)),
-            child: Padding(
-              padding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                          color: const Color(0xFF5C7C8A).withOpacity(0.12),
-                          borderRadius: BorderRadius.circular(10)),
-                      child: const Icon(Icons.info_outline_rounded,
-                          color: Color(0xFF5C7C8A), size: 18),
-                    ),
-                    const SizedBox(width: 12),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('About Vigor',
-                            style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w700,
-                                color: _text)),
-                        Text('Version 1.0.0',
-                            style: TextStyle(fontSize: 11, color: _sub)),
-                      ],
-                    ),
-                  ]),
-                  const SizedBox(height: 12),
-                  Text(
-                    'Vigor is your all-in-one fitness companion — designed to help you track workouts, monitor nutrition, stay hydrated, and build healthy habits every day. Whether you\'re a beginner or an athlete, Vigor adapts to your goals and keeps you motivated.',
-                    style: TextStyle(fontSize: 12, color: _sub, height: 1.5),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    '🏋️ Track workouts  •  🥗 Log meals  •  💧 Stay hydrated  •  👟 Count steps',
-                    style: TextStyle(
-                        fontSize: 11,
-                        color: _sub,
-                        fontStyle: FontStyle.italic),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          _tile(
-            icon: Icons.star_outline_rounded,
-            label: 'Rate Vigor',
-            sublabel: 'Enjoying the app? Leave a review!',
-            color: const Color(0xFFFFB300),
-            trailing: const Icon(
-              Icons.chevron_right_rounded,
-              color: AppColors.textSecondary,
-              size: 20,
-            ),
-            onTap: () async {
-              final Uri url = Uri.parse(
-                'https://play.google.com/store/apps/details?id=com.example.vigor',
-              );
+          const SizedBox(height: 12),
 
-              if (await canLaunchUrl(url)) {
-                await launchUrl(
-                  url,
-                  mode: LaunchMode.externalApplication,
-                );
-              } else {
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Could not open Play Store'),
-                    ),
-                  );
-                }
-              }
-            },
-          ),
-
-          _tile(
-            icon: Icons.share_rounded,
-            label: 'Share with Friends',
-            sublabel: 'Invite friends to join Vigor',
-            color: const Color(0xFF6FBF9F),
-            trailing: const Icon(
-              Icons.chevron_right_rounded,
-              color: AppColors.textSecondary,
-              size: 20,
-            ),
-            onTap: () async {
-              await Share.share(
-                '🔥 Check out Vigor Fitness App!\n\nTrack workouts, hydration, calories, and fitness goals easily.\n\nDownload now:\nhttps://play.google.com/store/apps/details?id=com.example.vigor',
-                subject: 'Vigor Fitness App',
-              );
-            },
-          ),
-
-          // ── Account ─────────────────────────────────────────
-          _sectionHeader('ACCOUNT'),
-          _tile(
-            icon: Icons.logout_rounded,
-            label: 'Sign Out',
-            sublabel: 'Log out of your account',
-            color: const Color(0xFFE07A5F),
-            trailing: const Icon(Icons.chevron_right_rounded,
-                color: AppColors.textSecondary, size: 20),
-            onTap: () async {
-              await FirebaseAuth.instance.signOut();
-              if (mounted) {
-                Navigator.pushAndRemoveUntil(
-                    context,
-                    MaterialPageRoute(
-                        builder: (_) => const auth_login.LoginPage()),
-                        (r) => false);
-              }
-            },
-          ),
-          _tile(
-            icon: Icons.delete_forever_rounded,
-            label: 'Delete Account',
-            sublabel: 'Permanently remove your data',
-            color: Colors.red,
-            trailing: const Icon(Icons.chevron_right_rounded,
-                color: AppColors.textSecondary, size: 20),
-            onTap: _deleteAccount,
+          // ── About ──
+          _sectionTitle('ABOUT'),
+          _settingsTile(
+            icon: Icons.info_outline_rounded,
+            label: 'App Version',
+            sublabel: 'Vigor v1.0.0',
+            color: const Color(0xFF5C7C8A),
+            trailing: const SizedBox.shrink(),
           ),
         ],
       ),
@@ -822,7 +552,7 @@ class _SettingsPageState extends State<SettingsPage> {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Profile Page
+// ProfilePage
 // ─────────────────────────────────────────────────────────────────────────────
 class ProfilePage extends StatefulWidget {
   final String username;
@@ -842,23 +572,7 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   void initState() {
     super.initState();
-    // Start pedometer only if step tracking is currently enabled
-    if (vigorSettings.stepTracking) {
-      _initPedometer();
-    }
-    // Listen for settings changes (e.g. user toggles step tracking)
-    vigorSettings.addListener(_onSettingsChanged);
-  }
-
-  void _onSettingsChanged() {
-    if (!mounted) return;
-    setState(() {});
-    // React to step tracking toggle
-    if (vigorSettings.stepTracking) {
-      if (_stepSub == null) _initPedometer();
-    } else {
-      _stopPedometer();
-    }
+    _initPedometer();
   }
 
   Future<void> _initPedometer() async {
@@ -867,8 +581,6 @@ class _ProfilePageState extends State<ProfilePage> {
     _stepSub = Pedometer.stepCountStream.listen(
           (e) {
         if (!mounted) return;
-        // Only process if step tracking is still on
-        if (!vigorSettings.stepTracking) return;
         setState(() {
           if (_stepBaseline == -1) _stepBaseline = e.steps;
           _liveSteps = (e.steps - _stepBaseline).clamp(0, 999999);
@@ -878,29 +590,14 @@ class _ProfilePageState extends State<ProfilePage> {
     );
     _statusSub = Pedometer.pedestrianStatusStream.listen(
           (e) {
-        if (mounted && vigorSettings.stepTracking) {
-          setState(() => _pedestrianStatus = e.status);
-        }
+        if (mounted) setState(() => _pedestrianStatus = e.status);
       },
       onError: (e) => debugPrint('Status error: $e'),
     );
   }
 
-  void _stopPedometer() {
-    _stepSub?.cancel();
-    _statusSub?.cancel();
-    _stepSub = null;
-    _statusSub = null;
-    setState(() {
-      _liveSteps = 0;
-      _stepBaseline = -1;
-      _pedestrianStatus = 'stopped';
-    });
-  }
-
   @override
   void dispose() {
-    vigorSettings.removeListener(_onSettingsChanged);
     _stepSub?.cancel();
     _statusSub?.cancel();
     super.dispose();
@@ -912,41 +609,6 @@ class _ProfilePageState extends State<ProfilePage> {
     if (v is double) return v.toInt();
     if (v is String) return int.tryParse(v) ?? 0;
     return 0;
-  }
-
-  String _distanceString(double km) {
-    if (vigorSettings.units == 'Imperial') {
-      return '${(km * 0.621371).toStringAsFixed(2)} mi';
-    }
-    return '${km.toStringAsFixed(2)} km';
-  }
-
-  String _waterDisplay(int ml) {
-    if (vigorSettings.units == 'Imperial') {
-      return '${(ml * 0.033814).toStringAsFixed(0)} fl oz';
-    }
-    return '$ml ml';
-  }
-
-  String _weightDisplay(dynamic w) {
-    if (w == null || w.toString().isEmpty) return '—';
-    final kg = double.tryParse(w.toString()) ?? 0;
-    if (vigorSettings.units == 'Imperial') {
-      return '${(kg * 2.20462).toStringAsFixed(1)} lbs';
-    }
-    return '${kg.toStringAsFixed(1)} kg';
-  }
-
-  String _heightDisplay(dynamic h) {
-    if (h == null || h.toString().isEmpty) return '—';
-    final cm = double.tryParse(h.toString()) ?? 0;
-    if (vigorSettings.units == 'Imperial') {
-      final totalIn = (cm / 2.54).round();
-      final ft = totalIn ~/ 12;
-      final inches = totalIn % 12;
-      return "$ft'$inches\"";
-    }
-    return '${cm.toStringAsFixed(0)} cm';
   }
 
   void _showAvatarOptions(BuildContext context, DocumentReference ref) {
@@ -1105,7 +767,8 @@ class _ProfilePageState extends State<ProfilePage> {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
+        padding:
+        const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
         decoration: BoxDecoration(
             color: color.withOpacity(0.06),
             borderRadius: BorderRadius.circular(16),
@@ -1121,7 +784,9 @@ class _ProfilePageState extends State<ProfilePage> {
           Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text(label,
                 style: TextStyle(
-                    fontWeight: FontWeight.w700, fontSize: 14, color: color)),
+                    fontWeight: FontWeight.w700,
+                    fontSize: 14,
+                    color: color)),
             Text(sublabel,
                 style: const TextStyle(
                     color: AppColors.textSecondary, fontSize: 11)),
@@ -1138,21 +803,25 @@ class _ProfilePageState extends State<ProfilePage> {
       ImageSource source, DocumentReference ref) async {
     final picker = ImagePicker();
     final XFile? file = await picker.pickImage(
-        source: source, maxWidth: 400, maxHeight: 400, imageQuality: 70);
+        source: source,
+        maxWidth: 400,
+        maxHeight: 400,
+        imageQuality: 70);
     if (file == null) return;
     final bytes = await File(file.path).readAsBytes();
-    await ref.set({'avatarBase64': base64Encode(bytes), 'avatarPresetId': ''},
+    await ref.set(
+        {'avatarBase64': base64Encode(bytes), 'avatarPresetId': ''},
         SetOptions(merge: true));
   }
 
   @override
   Widget build(BuildContext context) {
-    final isPrivate = vigorSettings.privacyMode;
     final userProfileRef = FirebaseFirestore.instance
         .collection('user_profiles')
         .doc(widget.username);
-    final usersRef =
-    FirebaseFirestore.instance.collection('users').doc(widget.username);
+    final usersRef = FirebaseFirestore.instance
+        .collection('users')
+        .doc(widget.username);
 
     final profileFields = [
       'name', 'age', 'gender', 'weight', 'height',
@@ -1174,12 +843,13 @@ class _ProfilePageState extends State<ProfilePage> {
             builder: (context, profileSnap) {
               if (!profileSnap.hasData) {
                 return const Center(
-                    child:
-                    CircularProgressIndicator(color: AppColors.green));
+                    child: CircularProgressIndicator(
+                        color: AppColors.green));
               }
 
-              final profileData =
-                  profileSnap.data!.data() as Map<String, dynamic>? ?? {};
+              final profileData = profileSnap.data!.data()
+              as Map<String, dynamic>? ??
+                  {};
               final merged = {...profileData, ...authData};
 
               final String displayName =
@@ -1225,7 +895,8 @@ class _ProfilePageState extends State<ProfilePage> {
 
               int filled = profileFields
                   .where((f) =>
-              merged[f] != null && merged[f].toString().isNotEmpty)
+              merged[f] != null &&
+                  merged[f].toString().isNotEmpty)
                   .length;
               double completionRatio = filled / profileFields.length;
               int percent = (completionRatio * 100).toInt();
@@ -1242,6 +913,7 @@ class _ProfilePageState extends State<ProfilePage> {
               int stepGoal = _parse(profileData['stepGoal']);
               int safeGoal = stepGoal == 0 ? 6000 : stepGoal;
 
+              // Water
               int water = _parse(profileData['water']);
               int waterGoal = _parse(profileData['waterGoal']);
               int safeWaterGoal = waterGoal == 0 ? 2000 : waterGoal;
@@ -1270,7 +942,8 @@ class _ProfilePageState extends State<ProfilePage> {
                       final ts = m['timestamp'];
                       if (ts is Timestamp) {
                         final dt = ts.toDate();
-                        dates.add(DateTime(dt.year, dt.month, dt.day));
+                        dates.add(
+                            DateTime(dt.year, dt.month, dt.day));
                       }
                     }
                     final sorted = dates.toList()
@@ -1279,10 +952,12 @@ class _ProfilePageState extends State<ProfilePage> {
                     DateTime(now.year, now.month, now.day);
                     for (final d in sorted) {
                       if (d == check ||
-                          d == check.subtract(const Duration(days: 1))) {
+                          d ==
+                              check.subtract(
+                                  const Duration(days: 1))) {
                         streak++;
-                        check =
-                            check.subtract(const Duration(days: 1));
+                        check = check
+                            .subtract(const Duration(days: 1));
                       } else {
                         break;
                       }
@@ -1292,24 +967,28 @@ class _ProfilePageState extends State<ProfilePage> {
                   return StreamBuilder<QuerySnapshot>(
                     stream: FirebaseFirestore.instance
                         .collection('meals')
-                        .where('userId', isEqualTo: widget.username)
+                        .where('userId',
+                        isEqualTo: widget.username)
                         .snapshots(),
                     builder: (context, mealSnap) {
                       int totalGained = 0;
+
                       if (mealSnap.hasData) {
                         for (var d in mealSnap.data!.docs) {
-                          final m = d.data() as Map<String, dynamic>;
-                          totalGained +=
-                              _parse(m['calories'] ?? m['gained']);
+                          final m =
+                          d.data() as Map<String, dynamic>;
+                          totalGained += _parse(
+                              m['calories'] ?? m['gained']);
                         }
                       }
 
-                      int netCalories = totalGained - totalBurned;
-                      String mask(String v) => isPrivate ? '••••' : v;
+                      int netCalories =
+                          totalGained - totalBurned;
 
                       return CustomScrollView(
                         slivers: [
-                          // ── Header ──────────────────────────
+
+                          // ── Header ────────────────────────────────────
                           SliverToBoxAdapter(
                             child: Container(
                               color: AppColors.blue,
@@ -1324,15 +1003,19 @@ class _ProfilePageState extends State<ProfilePage> {
                                     CrossAxisAlignment.start,
                                     children: [
                                       GestureDetector(
-                                        onTap: () => _showAvatarOptions(
-                                            context, userProfileRef),
+                                        onTap: () =>
+                                            _showAvatarOptions(
+                                                context,
+                                                userProfileRef),
                                         child: _AvatarWithRing(
                                           initials: initials,
                                           isFemale: gender == 'female' ||
                                               gender == 'f',
                                           avatarBase64: avatarBase64,
-                                          resolvedPreset: resolvedPreset,
-                                          completionRatio: completionRatio,
+                                          resolvedPreset:
+                                          resolvedPreset,
+                                          completionRatio:
+                                          completionRatio,
                                           percent: percent,
                                           isComplete: isComplete,
                                         ),
@@ -1341,154 +1024,147 @@ class _ProfilePageState extends State<ProfilePage> {
                                       Expanded(
                                         child: Column(
                                           crossAxisAlignment:
-                                          CrossAxisAlignment.start,
+                                          CrossAxisAlignment
+                                              .start,
                                           children: [
-                                            const SizedBox(height: 4),
+                                            const SizedBox(
+                                                height: 4),
                                             Text(displayName,
                                                 style: const TextStyle(
-                                                    color: AppColors.white,
+                                                    color: AppColors
+                                                        .white,
                                                     fontSize: 20,
                                                     fontWeight:
-                                                    FontWeight.w800,
-                                                    letterSpacing: -0.5)),
+                                                    FontWeight
+                                                        .w800,
+                                                    letterSpacing:
+                                                    -0.5)),
                                             if (displayBio
                                                 .isNotEmpty) ...[
-                                              const SizedBox(height: 3),
+                                              const SizedBox(
+                                                  height: 3),
                                               Text(displayBio,
                                                   style: const TextStyle(
-                                                      color: Colors.white70,
+                                                      color: Colors
+                                                          .white70,
                                                       fontSize: 12,
-                                                      fontStyle: FontStyle
+                                                      fontStyle:
+                                                      FontStyle
                                                           .italic),
                                                   maxLines: 2,
                                                   overflow: TextOverflow
                                                       .ellipsis),
                                             ],
-                                            const SizedBox(height: 6),
+                                            const SizedBox(
+                                                height: 6),
                                             Row(children: [
                                               const Icon(
                                                   Icons
                                                       .location_on_rounded,
-                                                  color: Colors.white54,
+                                                  color: Colors
+                                                      .white54,
                                                   size: 12),
-                                              const SizedBox(width: 3),
+                                              const SizedBox(
+                                                  width: 3),
                                               Flexible(
-                                                  child: Text(displayCity,
+                                                  child: Text(
+                                                      displayCity,
                                                       style: const TextStyle(
-                                                          color:
-                                                          Colors.white54,
-                                                          fontSize: 12),
-                                                      overflow: TextOverflow
+                                                          color: Colors
+                                                              .white54,
+                                                          fontSize:
+                                                          12),
+                                                      overflow:
+                                                      TextOverflow
                                                           .ellipsis)),
                                               if (displayActivity
                                                   .isNotEmpty) ...[
-                                                const SizedBox(width: 10),
+                                                const SizedBox(
+                                                    width: 10),
                                                 const Icon(
                                                     Icons
                                                         .sports_score_rounded,
-                                                    color: Colors.white54,
+                                                    color: Colors
+                                                        .white54,
                                                     size: 12),
-                                                const SizedBox(width: 3),
+                                                const SizedBox(
+                                                    width: 3),
                                                 Flexible(
                                                     child: Text(
                                                         displayActivity,
                                                         style: const TextStyle(
                                                             color: Colors
                                                                 .white54,
-                                                            fontSize: 12),
+                                                            fontSize:
+                                                            12),
                                                         overflow:
                                                         TextOverflow
                                                             .ellipsis)),
                                               ],
                                             ]),
-                                            const SizedBox(height: 8),
-                                            // Only show pedometer chip when tracking is on
-                                            if (vigorSettings.stepTracking)
-                                              _PedometerChip(
-                                                  status: _pedestrianStatus,
-                                                  liveSteps: _liveSteps)
-                                            else
-                                              Container(
-                                                padding: const EdgeInsets
-                                                    .symmetric(
-                                                    horizontal: 10,
-                                                    vertical: 5),
-                                                decoration: BoxDecoration(
-                                                  color: Colors.white
-                                                      .withOpacity(0.1),
-                                                  borderRadius:
-                                                  BorderRadius.circular(
-                                                      20),
-                                                ),
-                                                child: const Row(
-                                                  mainAxisSize:
-                                                  MainAxisSize.min,
-                                                  children: [
-                                                    Icon(
-                                                        Icons
-                                                            .directions_walk_rounded,
-                                                        color: Colors.white38,
-                                                        size: 13),
-                                                    SizedBox(width: 5),
-                                                    Text(
-                                                        'Step tracking off',
-                                                        style: TextStyle(
-                                                            color: Colors
-                                                                .white38,
-                                                            fontSize: 11,
-                                                            fontWeight:
-                                                            FontWeight
-                                                                .w600)),
-                                                  ],
-                                                ),
-                                              ),
+                                            const SizedBox(
+                                                height: 8),
+                                            _PedometerChip(
+                                                status:
+                                                _pedestrianStatus,
+                                                liveSteps:
+                                                _liveSteps),
                                           ],
                                         ),
                                       ),
-                                      // Action buttons
+                                      // Action buttons column
                                       Column(children: [
                                         _headerIconBtn(
                                             icon: Icons.edit_rounded,
-                                            onTap: () => Navigator.push(
-                                                context,
-                                                MaterialPageRoute(
-                                                    builder: (_) =>
-                                                        EditProfilePage(
-                                                            username: widget
-                                                                .username)))),
+                                            onTap: () =>
+                                                Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                        builder: (_) =>
+                                                            EditProfilePage(
+                                                                username:
+                                                                widget.username)))),
                                         const SizedBox(height: 8),
                                         _headerIconBtn(
                                             icon: Icons
                                                 .notifications_rounded,
-                                            onTap: () => Navigator.push(
-                                                context,
-                                                MaterialPageRoute(
-                                                    builder: (_) =>
-                                                        ActivityPage(
-                                                            username: widget
-                                                                .username)))),
+                                            onTap: () =>
+                                                Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                        builder: (_) =>
+                                                            ActivityPage(
+                                                                username:
+                                                                widget.username)))),
                                         const SizedBox(height: 8),
+                                        // Settings button
                                         _headerIconBtn(
-                                            icon: Icons.settings_rounded,
-                                            onTap: () => Navigator.push(
-                                                context,
-                                                MaterialPageRoute(
-                                                    builder: (_) =>
-                                                        SettingsPage(
-                                                            username: widget
-                                                                .username)))),
+                                            icon: Icons
+                                                .settings_rounded,
+                                            onTap: () =>
+                                                Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                        builder: (_) =>
+                                                            SettingsPage(
+                                                                username:
+                                                                widget.username)))),
                                       ]),
                                     ],
                                   ),
-                                  if (displayFitnessLevel.isNotEmpty ||
+                                  if (displayFitnessLevel
+                                      .isNotEmpty ||
                                       displayGoal.isNotEmpty) ...[
                                     const SizedBox(height: 14),
                                     Wrap(spacing: 8, children: [
-                                      if (displayFitnessLevel.isNotEmpty)
-                                        _headerTag(Icons.bar_chart_rounded,
+                                      if (displayFitnessLevel
+                                          .isNotEmpty)
+                                        _headerTag(
+                                            Icons.bar_chart_rounded,
                                             displayFitnessLevel),
                                       if (displayGoal.isNotEmpty)
-                                        _headerTag(Icons.flag_rounded,
+                                        _headerTag(
+                                            Icons.flag_rounded,
                                             displayGoal),
                                     ]),
                                   ],
@@ -1497,7 +1173,7 @@ class _ProfilePageState extends State<ProfilePage> {
                             ),
                           ),
 
-                          // ── Body ─────────────────────────────
+                          // ── Body ──────────────────────────────────────
                           SliverToBoxAdapter(
                             child: Padding(
                               padding: const EdgeInsets.all(20),
@@ -1505,49 +1181,26 @@ class _ProfilePageState extends State<ProfilePage> {
                                 crossAxisAlignment:
                                 CrossAxisAlignment.start,
                                 children: [
-                                  // Body metrics
-                                  if (merged['weight'] != null ||
-                                      merged['height'] != null) ...[
-                                    Row(children: [
-                                      if (merged['weight'] != null)
-                                        _metricChip(
-                                            Icons.monitor_weight_rounded,
-                                            _weightDisplay(
-                                                merged['weight']),
-                                            'Weight',
-                                            const Color(0xFF6FBF9F)),
-                                      if (merged['weight'] != null &&
-                                          merged['height'] != null)
-                                        const SizedBox(width: 10),
-                                      if (merged['height'] != null)
-                                        _metricChip(
-                                            Icons.height_rounded,
-                                            _heightDisplay(
-                                                merged['height']),
-                                            'Height',
-                                            const Color(0xFF5C7C8A)),
-                                    ]),
-                                    const SizedBox(height: 16),
-                                  ],
 
-                                  // Quick stat tiles
+                                  // ── Quick stat tiles ──
                                   Row(children: [
                                     _statTile(
                                         'Total Workouts',
-                                        mask('$totalWorkouts'),
+                                        '$totalWorkouts',
                                         Icons.fitness_center_rounded,
                                         const Color(0xFF5C7C8A)),
                                     const SizedBox(width: 10),
                                     _statTile(
                                         'Streak',
-                                        mask('$streak days'),
-                                        Icons.local_fire_department_rounded,
+                                        '$streak days',
+                                        Icons
+                                            .local_fire_department_rounded,
                                         const Color(0xFFE07A5F)),
                                   ]),
 
                                   const SizedBox(height: 24),
 
-                                  // Today's Steps
+                                  // ── Today's Steps (single card) ──
                                   _sectionTitle("Today's Steps"),
                                   const SizedBox(height: 12),
                                   Container(
@@ -1555,9 +1208,9 @@ class _ProfilePageState extends State<ProfilePage> {
                                     decoration: BoxDecoration(
                                         color: AppColors.white,
                                         borderRadius:
-                                        BorderRadius.circular(20)),
-                                    child: vigorSettings.stepTracking
-                                        ? Column(
+                                        BorderRadius.circular(
+                                            20)),
+                                    child: Column(
                                       crossAxisAlignment:
                                       CrossAxisAlignment.start,
                                       children: [
@@ -1582,7 +1235,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                                   .start,
                                               children: [
                                                 Text(
-                                                    mask('$_liveSteps steps'),
+                                                    '$_liveSteps steps',
                                                     style: const TextStyle(
                                                         fontSize: 20,
                                                         fontWeight:
@@ -1591,7 +1244,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                                         color: AppColors
                                                             .textPrimary)),
                                                 Text(
-                                                    'Goal: $safeGoal steps · ${_distanceString(distanceKm)}',
+                                                    'Goal: $safeGoal steps · ${distanceKm.toStringAsFixed(2)} km',
                                                     style: const TextStyle(
                                                         color: AppColors
                                                             .textSecondary,
@@ -1600,12 +1253,10 @@ class _ProfilePageState extends State<ProfilePage> {
                                             ),
                                           ),
                                           Text(
-                                            isPrivate
-                                                ? '••%'
-                                                : '${((_liveSteps / safeGoal) * 100).clamp(0, 100).toInt()}%',
+                                            '${((_liveSteps / safeGoal) * 100).clamp(0, 100).toInt()}%',
                                             style: const TextStyle(
-                                                color:
-                                                Color(0xFF5C7C8A),
+                                                color: Color(
+                                                    0xFF5C7C8A),
                                                 fontWeight:
                                                 FontWeight.w700,
                                                 fontSize: 16),
@@ -1613,9 +1264,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                         ]),
                                         const SizedBox(height: 14),
                                         _progressBar(
-                                            value: isPrivate
-                                                ? 0
-                                                : (_liveSteps /
+                                            value: (_liveSteps /
                                                 safeGoal)
                                                 .clamp(0.0, 1.0),
                                             color: const Color(
@@ -1637,44 +1286,12 @@ class _ProfilePageState extends State<ProfilePage> {
                                               FontWeight.w500),
                                         ),
                                       ],
-                                    )
-                                    // Step tracking disabled view
-                                        : Column(
-                                      children: [
-                                        const SizedBox(height: 8),
-                                        const Icon(
-                                            Icons
-                                                .directions_walk_rounded,
-                                            color: AppColors
-                                                .textSecondary,
-                                            size: 36),
-                                        const SizedBox(height: 10),
-                                        const Text(
-                                          'Step tracking is disabled',
-                                          style: TextStyle(
-                                              fontWeight:
-                                              FontWeight.w600,
-                                              color: AppColors
-                                                  .textPrimary,
-                                              fontSize: 14),
-                                        ),
-                                        const SizedBox(height: 4),
-                                        const Text(
-                                          'Enable it in Settings → Activity Tracking',
-                                          style: TextStyle(
-                                              color: AppColors
-                                                  .textSecondary,
-                                              fontSize: 12),
-                                          textAlign: TextAlign.center,
-                                        ),
-                                        const SizedBox(height: 8),
-                                      ],
                                     ),
                                   ),
 
                                   const SizedBox(height: 24),
 
-                                  // Calories
+                                  // ── Calories (Burn & Gain only) ──
                                   _sectionTitle('Calories'),
                                   const SizedBox(height: 12),
                                   Container(
@@ -1682,7 +1299,8 @@ class _ProfilePageState extends State<ProfilePage> {
                                     decoration: BoxDecoration(
                                         color: AppColors.white,
                                         borderRadius:
-                                        BorderRadius.circular(20)),
+                                        BorderRadius.circular(
+                                            20)),
                                     child: Column(
                                       crossAxisAlignment:
                                       CrossAxisAlignment.start,
@@ -1690,12 +1308,15 @@ class _ProfilePageState extends State<ProfilePage> {
                                         Row(children: [
                                           Expanded(
                                               child: _calorieBlock(
-                                                icon: Icons.restaurant_rounded,
+                                                icon: Icons
+                                                    .restaurant_rounded,
                                                 label: 'Calories Gained',
-                                                value: mask('$totalGained'),
+                                                value: '$totalGained',
                                                 unit: 'kcal',
-                                                color: const Color(0xFF6FBF9F),
-                                                bg: const Color(0xFFE8F5E9),
+                                                color: const Color(
+                                                    0xFF6FBF9F),
+                                                bg: const Color(
+                                                    0xFFE8F5E9),
                                               )),
                                           const SizedBox(width: 12),
                                           Expanded(
@@ -1703,10 +1324,12 @@ class _ProfilePageState extends State<ProfilePage> {
                                                 icon: Icons
                                                     .local_fire_department_rounded,
                                                 label: 'Calories Burned',
-                                                value: mask('$totalBurned'),
+                                                value: '$totalBurned',
                                                 unit: 'kcal',
-                                                color: const Color(0xFFE07A5F),
-                                                bg: const Color(0xFFFFEBEE),
+                                                color: const Color(
+                                                    0xFFE07A5F),
+                                                bg: const Color(
+                                                    0xFFFFEBEE),
                                               )),
                                         ]),
                                         const SizedBox(height: 16),
@@ -1716,7 +1339,8 @@ class _ProfilePageState extends State<ProfilePage> {
                                         const SizedBox(height: 14),
                                         Row(
                                           mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
+                                          MainAxisAlignment
+                                              .spaceBetween,
                                           children: [
                                             Row(children: [
                                               Icon(
@@ -1726,11 +1350,15 @@ class _ProfilePageState extends State<ProfilePage> {
                                                     : Icons
                                                     .trending_down_rounded,
                                                 size: 16,
-                                                color: netCalories > 0
-                                                    ? const Color(0xFFE07A5F)
-                                                    : AppColors.greenDark,
+                                                color: netCalories >
+                                                    0
+                                                    ? const Color(
+                                                    0xFFE07A5F)
+                                                    : AppColors
+                                                    .greenDark,
                                               ),
-                                              const SizedBox(width: 6),
+                                              const SizedBox(
+                                                  width: 6),
                                               const Text(
                                                   'Net (Gained − Burned)',
                                                   style: TextStyle(
@@ -1738,42 +1366,44 @@ class _ProfilePageState extends State<ProfilePage> {
                                                       color: AppColors
                                                           .textSecondary,
                                                       fontWeight:
-                                                      FontWeight.w500)),
+                                                      FontWeight
+                                                          .w500)),
                                             ]),
                                             Text(
-                                              isPrivate
-                                                  ? '•••• kcal'
-                                                  : '${netCalories > 0 ? '+' : ''}$netCalories kcal',
+                                              '${netCalories > 0 ? '+' : ''}$netCalories kcal',
                                               style: TextStyle(
                                                   fontSize: 13,
-                                                  fontWeight: FontWeight.w700,
-                                                  color: netCalories > 0
+                                                  fontWeight:
+                                                  FontWeight.w700,
+                                                  color: netCalories >
+                                                      0
                                                       ? const Color(
                                                       0xFFE07A5F)
-                                                      : AppColors.greenDark),
+                                                      : AppColors
+                                                      .greenDark),
                                             ),
                                           ],
                                         ),
-                                        if (!isPrivate) ...[
-                                          const SizedBox(height: 6),
-                                          Text(
-                                            netCalories > 0
-                                                ? 'You\'re in a calorie surplus. Consider more activity!'
-                                                : 'Great! You\'re in a calorie deficit. Keep it up!',
-                                            style: TextStyle(
-                                                fontSize: 11,
-                                                color: netCalories > 0
-                                                    ? const Color(0xFFE07A5F)
-                                                    : AppColors.greenDark),
-                                          ),
-                                        ],
+                                        const SizedBox(height: 6),
+                                        Text(
+                                          netCalories > 0
+                                              ? 'You\'re in a calorie surplus. Consider more activity!'
+                                              : 'Great! You\'re in a calorie deficit. Keep it up!',
+                                          style: TextStyle(
+                                              fontSize: 11,
+                                              color: netCalories > 0
+                                                  ? const Color(
+                                                  0xFFE07A5F)
+                                                  : AppColors
+                                                  .greenDark),
+                                        ),
                                       ],
                                     ),
                                   ),
 
                                   const SizedBox(height: 24),
 
-                                  // Hydration
+                                  // ── Hydration (from old code) ──
                                   _sectionTitle('Hydration'),
                                   const SizedBox(height: 12),
                                   Container(
@@ -1781,7 +1411,8 @@ class _ProfilePageState extends State<ProfilePage> {
                                     decoration: BoxDecoration(
                                         color: AppColors.white,
                                         borderRadius:
-                                        BorderRadius.circular(20)),
+                                        BorderRadius.circular(
+                                            20)),
                                     child: Column(
                                       crossAxisAlignment:
                                       CrossAxisAlignment.start,
@@ -1789,33 +1420,39 @@ class _ProfilePageState extends State<ProfilePage> {
                                         Row(children: [
                                           Container(
                                             padding:
-                                            const EdgeInsets.all(10),
-                                            decoration: BoxDecoration(
-                                              color:
-                                              const Color(0xFFDCEEF5),
+                                            const EdgeInsets.all(
+                                                10),
+                                            decoration:
+                                            BoxDecoration(
+                                              color: const Color(
+                                                  0xFFDCEEF5),
                                               borderRadius:
-                                              BorderRadius.circular(12),
+                                              BorderRadius
+                                                  .circular(12),
                                             ),
                                             child: const Icon(
-                                                Icons.water_drop_rounded,
-                                                color: Color(0xFF5C7C8A),
+                                                Icons
+                                                    .water_drop_rounded,
+                                                color: Color(
+                                                    0xFF5C7C8A),
                                                 size: 20),
                                           ),
                                           const SizedBox(width: 14),
                                           Column(
                                             crossAxisAlignment:
-                                            CrossAxisAlignment.start,
+                                            CrossAxisAlignment
+                                                .start,
                                             children: [
-                                              Text(
-                                                  mask(_waterDisplay(water)),
+                                              Text('$water ml',
                                                   style: const TextStyle(
                                                       fontSize: 20,
                                                       fontWeight:
-                                                      FontWeight.w700,
+                                                      FontWeight
+                                                          .w700,
                                                       color: AppColors
                                                           .textPrimary)),
                                               Text(
-                                                  'of ${_waterDisplay(safeWaterGoal)} daily goal',
+                                                  'of $safeWaterGoal ml daily goal',
                                                   style: const TextStyle(
                                                       color: AppColors
                                                           .textSecondary,
@@ -1824,30 +1461,31 @@ class _ProfilePageState extends State<ProfilePage> {
                                           ),
                                           const Spacer(),
                                           Text(
-                                            isPrivate
-                                                ? '••%'
-                                                : '${((water / safeWaterGoal) * 100).clamp(0, 100).toInt()}%',
+                                            '${((water / safeWaterGoal) * 100).clamp(0, 100).toInt()}%',
                                             style: const TextStyle(
                                                 color: AppColors.blue,
-                                                fontWeight: FontWeight.w700,
+                                                fontWeight:
+                                                FontWeight.w700,
                                                 fontSize: 16),
                                           ),
                                         ]),
                                         const SizedBox(height: 14),
                                         ClipRRect(
                                           borderRadius:
-                                          BorderRadius.circular(6),
-                                          child: LinearProgressIndicator(
-                                            value: isPrivate
-                                                ? 0
-                                                : (water / safeWaterGoal)
+                                          BorderRadius.circular(
+                                              6),
+                                          child:
+                                          LinearProgressIndicator(
+                                            value: (water /
+                                                safeWaterGoal)
                                                 .clamp(0.0, 1.0),
                                             minHeight: 6,
                                             backgroundColor:
                                             AppColors.inputField,
                                             valueColor:
                                             const AlwaysStoppedAnimation(
-                                                Color(0xFF5C7C8A)),
+                                                Color(
+                                                    0xFF5C7C8A)),
                                           ),
                                         ),
                                         const SizedBox(height: 16),
@@ -1856,22 +1494,19 @@ class _ProfilePageState extends State<ProfilePage> {
                                             child: _WaterButton(
                                               imagePath:
                                               'assets/images/GLASS.png',
-                                              label:
-                                              '+200 ${vigorSettings.waterUnit}',
+                                              label: '+200 ml',
                                               onTap: () async {
-                                                await userProfileRef.set(
+                                                await userProfileRef
+                                                    .set(
                                                   {
                                                     'water': FieldValue
                                                         .increment(200)
                                                   },
-                                                  SetOptions(merge: true),
+                                                  SetOptions(
+                                                      merge: true),
                                                 );
-                                                // Only fire notification if water reminder is ON
-                                                if (vigorSettings
-                                                    .waterReminder) {
-                                                  await showWaterNotification(
-                                                      200);
-                                                }
+                                                await showWaterNotification(
+                                                    200);
                                               },
                                             ),
                                           ),
@@ -1880,22 +1515,19 @@ class _ProfilePageState extends State<ProfilePage> {
                                             child: _WaterButton(
                                               imagePath:
                                               'assets/images/JUG.png',
-                                              label:
-                                              '+500 ${vigorSettings.waterUnit}',
+                                              label: '+500 ml',
                                               onTap: () async {
-                                                await userProfileRef.set(
+                                                await userProfileRef
+                                                    .set(
                                                   {
                                                     'water': FieldValue
                                                         .increment(500)
                                                   },
-                                                  SetOptions(merge: true),
+                                                  SetOptions(
+                                                      merge: true),
                                                 );
-                                                // Only fire notification if water reminder is ON
-                                                if (vigorSettings
-                                                    .waterReminder) {
-                                                  await showWaterNotification(
-                                                      500);
-                                                }
+                                                await showWaterNotification(
+                                                    500);
                                               },
                                               isPrimary: true,
                                             ),
@@ -1911,10 +1543,13 @@ class _ProfilePageState extends State<ProfilePage> {
                                     icon: Icons.logout_rounded,
                                     label: 'Logout',
                                     sublabel: 'Sign out of your account',
-                                    iconColor: const Color(0xFFE07A5F),
-                                    textColor: const Color(0xFFE07A5F),
+                                    iconColor:
+                                    const Color(0xFFE07A5F),
+                                    textColor:
+                                    const Color(0xFFE07A5F),
                                     onTap: () async {
-                                      await FirebaseAuth.instance.signOut();
+                                      await FirebaseAuth.instance
+                                          .signOut();
                                       Navigator.pushAndRemoveUntil(
                                           context,
                                           MaterialPageRoute(
@@ -1944,28 +1579,6 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   // ── Helper widgets ──────────────────────────────────────────
-
-  Widget _metricChip(IconData icon, String value, String label, Color color) =>
-      Expanded(
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
-          decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(14)),
-          child: Row(children: [
-            Icon(icon, color: color, size: 18),
-            const SizedBox(width: 8),
-            Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(value,
-                  style: TextStyle(
-                      fontWeight: FontWeight.w700, fontSize: 13, color: color)),
-              Text(label,
-                  style: const TextStyle(
-                      color: AppColors.textSecondary, fontSize: 10)),
-            ]),
-          ]),
-        ),
-      );
 
   Widget _headerTag(IconData icon, String label) => Container(
     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
@@ -2002,12 +1615,13 @@ class _ProfilePageState extends State<ProfilePage> {
         required Color bg}) =>
       Container(
         padding: const EdgeInsets.all(10),
-        decoration:
-        BoxDecoration(color: bg, borderRadius: BorderRadius.circular(12)),
+        decoration: BoxDecoration(
+            color: bg, borderRadius: BorderRadius.circular(12)),
         child: Icon(icon, color: color, size: 20),
       );
 
-  Widget _progressBar({required double value, required Color color}) =>
+  Widget _progressBar(
+      {required double value, required Color color}) =>
       ClipRRect(
         borderRadius: BorderRadius.circular(6),
         child: LinearProgressIndicator(
@@ -2035,8 +1649,8 @@ class _ProfilePageState extends State<ProfilePage> {
   }) =>
       Container(
         padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
-        decoration:
-        BoxDecoration(color: bg, borderRadius: BorderRadius.circular(14)),
+        decoration: BoxDecoration(
+            color: bg, borderRadius: BorderRadius.circular(14)),
         child: Row(children: [
           Container(
             padding: const EdgeInsets.all(8),
@@ -2047,31 +1661,30 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
           const SizedBox(width: 10),
           Expanded(
-              child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(label,
-                        style: TextStyle(
-                            fontSize: 10,
-                            color: color.withOpacity(0.8),
-                            fontWeight: FontWeight.w500)),
-                    const SizedBox(height: 2),
-                    RichText(
-                        text: TextSpan(children: [
-                          TextSpan(
-                              text: value,
-                              style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w800,
-                                  color: color)),
-                          TextSpan(
-                              text: ' $unit',
-                              style: TextStyle(
-                                  fontSize: 10,
-                                  color: color.withOpacity(0.7),
-                                  fontWeight: FontWeight.w500)),
-                        ])),
-                  ])),
+              child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text(label,
+                    style: TextStyle(
+                        fontSize: 10,
+                        color: color.withOpacity(0.8),
+                        fontWeight: FontWeight.w500)),
+                const SizedBox(height: 2),
+                RichText(
+                    text: TextSpan(children: [
+                      TextSpan(
+                          text: value,
+                          style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w800,
+                              color: color)),
+                      TextSpan(
+                          text: ' $unit',
+                          style: TextStyle(
+                              fontSize: 10,
+                              color: color.withOpacity(0.7),
+                              fontWeight: FontWeight.w500)),
+                    ])),
+              ])),
         ]),
       );
 
@@ -2079,7 +1692,8 @@ class _ProfilePageState extends State<ProfilePage> {
       String label, String value, IconData icon, Color color) =>
       Expanded(
         child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
+          padding:
+          const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
           decoration: BoxDecoration(
               color: AppColors.white,
               borderRadius: BorderRadius.circular(18)),
@@ -2119,7 +1733,8 @@ class _ProfilePageState extends State<ProfilePage> {
       GestureDetector(
         onTap: onTap,
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+          padding:
+          const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
           decoration: BoxDecoration(
               color: AppColors.white,
               borderRadius: BorderRadius.circular(16)),
@@ -2144,7 +1759,8 @@ class _ProfilePageState extends State<ProfilePage> {
                       if (sublabel.isNotEmpty)
                         Text(sublabel,
                             style: const TextStyle(
-                                color: AppColors.textSecondary, fontSize: 11)),
+                                color: AppColors.textSecondary,
+                                fontSize: 11)),
                     ])),
             const Icon(Icons.chevron_right_rounded,
                 color: AppColors.textSecondary, size: 20),
@@ -2228,13 +1844,15 @@ class _AvatarWithRing extends StatelessWidget {
           bottom: 0,
           left: 0,
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+            padding:
+            const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
             decoration: BoxDecoration(
                 color: AppColors.blue,
                 borderRadius: BorderRadius.circular(8),
                 boxShadow: [
                   BoxShadow(
-                      color: Colors.black.withOpacity(0.2), blurRadius: 4)
+                      color: Colors.black.withOpacity(0.2),
+                      blurRadius: 4)
                 ]),
             child: Text('$percent%',
                 style: const TextStyle(
@@ -2254,7 +1872,8 @@ class _AvatarWithRing extends StatelessWidget {
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                    color: Colors.black.withOpacity(0.18), blurRadius: 5)
+                    color: Colors.black.withOpacity(0.18),
+                    blurRadius: 5)
               ]),
           child: const Icon(Icons.camera_alt_rounded,
               size: 13, color: AppColors.blue),
@@ -2272,7 +1891,8 @@ class _AvatarWithRing extends StatelessWidget {
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                      color: Colors.black.withOpacity(0.2), blurRadius: 4)
+                      color: Colors.black.withOpacity(0.2),
+                      blurRadius: 4)
                 ]),
             child: const Icon(Icons.check_rounded,
                 size: 13, color: Colors.white),
@@ -2350,14 +1970,19 @@ class _PedometerChip extends StatelessWidget {
           walking
               ? Icons.directions_walk_rounded
               : Icons.airline_seat_recline_normal_rounded,
-          color: walking ? AppColors.greenLight : Colors.white70,
+          color:
+          walking ? AppColors.greenLight : Colors.white70,
           size: 13,
         ),
         const SizedBox(width: 5),
         Text(
-          walking ? 'Walking · $liveSteps steps' : 'Standing still',
+          walking
+              ? 'Walking · $liveSteps steps'
+              : 'Standing still',
           style: TextStyle(
-              color: walking ? AppColors.greenLight : Colors.white70,
+              color: walking
+                  ? AppColors.greenLight
+                  : Colors.white70,
               fontSize: 11,
               fontWeight: FontWeight.w600),
         ),
@@ -2430,59 +2055,32 @@ class _EditProfilePageState extends State<EditProfilePage> {
   final _basicFields = ['name', 'age', 'gender', 'city'];
   final _bodyFields = ['weight', 'height'];
   final _fitnessFields = [
-    'fitnessLevel',
-    'preferredActivity',
-    'weeklyGoalDays',
-    'goal',
-    'bio'
+    'fitnessLevel', 'preferredActivity', 'weeklyGoalDays', 'goal', 'bio'
   ];
 
   final fieldLabels = {
-    'name': 'Full Name',
-    'age': 'Age',
-    'gender': 'Gender',
-    'city': 'City',
-    'weight': 'Weight',
-    'height': 'Height',
-    'fitnessLevel': 'Fitness Level',
-    'preferredActivity': 'Preferred Activity',
-    'weeklyGoalDays': 'Active Days per Week',
-    'goal': 'Fitness Goal',
+    'name': 'Full Name', 'age': 'Age', 'gender': 'Gender', 'city': 'City',
+    'weight': 'Weight (kg)', 'height': 'Height (cm)',
+    'fitnessLevel': 'Fitness Level', 'preferredActivity': 'Preferred Activity',
+    'weeklyGoalDays': 'Active Days per Week', 'goal': 'Fitness Goal',
     'bio': 'About Me',
   };
 
   final fieldIcons = {
-    'name': Icons.person_rounded,
-    'age': Icons.cake_rounded,
-    'gender': Icons.wc_rounded,
-    'city': Icons.location_on_rounded,
-    'weight': Icons.monitor_weight_rounded,
-    'height': Icons.height_rounded,
+    'name': Icons.person_rounded, 'age': Icons.cake_rounded,
+    'gender': Icons.wc_rounded, 'city': Icons.location_on_rounded,
+    'weight': Icons.monitor_weight_rounded, 'height': Icons.height_rounded,
     'fitnessLevel': Icons.bar_chart_rounded,
     'preferredActivity': Icons.sports_score_rounded,
     'weeklyGoalDays': Icons.calendar_month_rounded,
-    'goal': Icons.flag_rounded,
-    'bio': Icons.edit_note_rounded,
+    'goal': Icons.flag_rounded, 'bio': Icons.edit_note_rounded,
   };
 
   final _genderOptions = ['Male', 'Female', 'Other', 'Prefer not to say'];
-  final _fitnessOptions = [
-    'Beginner',
-    'Intermediate',
-    'Advanced',
-    'Athlete'
-  ];
+  final _fitnessOptions = ['Beginner', 'Intermediate', 'Advanced', 'Athlete'];
   final _activityOptions = [
-    'Running',
-    'Cycling',
-    'Swimming',
-    'Weightlifting',
-    'Yoga',
-    'HIIT',
-    'Football',
-    'Basketball',
-    'Hiking',
-    'Boxing',
+    'Running', 'Cycling', 'Swimming', 'Weightlifting',
+    'Yoga', 'HIIT', 'Football', 'Basketball', 'Hiking', 'Boxing',
   ];
   final _weeklyDayOptions = ['1', '2', '3', '4', '5', '6', '7'];
 
@@ -2521,22 +2119,12 @@ class _EditProfilePageState extends State<EditProfilePage> {
     setState(() => _saving = true);
     final Map<String, dynamic> data = {};
     controllers.forEach((k, v) => data[k] = v.text);
-    await _profileRef
-        .doc(widget.username)
-        .set(data, SetOptions(merge: true));
-    await _usersRef
-        .doc(widget.username)
-        .set(data, SetOptions(merge: true));
+    await _profileRef.doc(widget.username).set(data, SetOptions(merge: true));
+    await _usersRef.doc(widget.username).set(data, SetOptions(merge: true));
     if (mounted) {
       setState(() => _saving = false);
       Navigator.pop(context);
     }
-  }
-
-  String _unitHint(String f) {
-    if (f == 'weight') return 'Weight (${vigorSettings.weightUnit})';
-    if (f == 'height') return 'Height (${vigorSettings.heightUnit})';
-    return fieldLabels[f] ?? f;
   }
 
   TextInputType _keyboard(String f) {
@@ -2548,21 +2136,16 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
   List<String>? _dropdownOptions(String f) {
     switch (f) {
-      case 'gender':
-        return _genderOptions;
-      case 'fitnessLevel':
-        return _fitnessOptions;
-      case 'preferredActivity':
-        return _activityOptions;
-      case 'weeklyGoalDays':
-        return _weeklyDayOptions;
-      default:
-        return null;
+      case 'gender': return _genderOptions;
+      case 'fitnessLevel': return _fitnessOptions;
+      case 'preferredActivity': return _activityOptions;
+      case 'weeklyGoalDays': return _weeklyDayOptions;
+      default: return null;
     }
   }
 
   InputDecoration _inputDeco(String f) => InputDecoration(
-    labelText: _unitHint(f),
+    labelText: fieldLabels[f],
     prefixIcon: Icon(fieldIcons[f] ?? Icons.edit_rounded,
         size: 18, color: AppColors.textSecondary),
     labelStyle:
@@ -2606,8 +2189,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
           onChanged: (v) {
             if (v != null) setState(() => controllers[f]!.text = v);
           },
-          style: const TextStyle(
-              color: AppColors.textPrimary, fontSize: 14),
+          style: const TextStyle(color: AppColors.textPrimary, fontSize: 14),
         ),
       );
     }
@@ -2617,19 +2199,17 @@ class _EditProfilePageState extends State<EditProfilePage> {
         controller: controllers[f],
         keyboardType: _keyboard(f),
         maxLines: f == 'bio' ? 3 : 1,
-        style:
-        const TextStyle(color: AppColors.textPrimary, fontSize: 14),
+        style: const TextStyle(color: AppColors.textPrimary, fontSize: 14),
         decoration: _inputDeco(f),
       ),
     );
   }
 
-  Widget _groupCard({
-    required String title,
-    required IconData icon,
-    required Color color,
-    required List<String> fields,
-  }) =>
+  Widget _groupCard(
+      {required String title,
+        required IconData icon,
+        required Color color,
+        required List<String> fields}) =>
       Container(
         margin: const EdgeInsets.only(bottom: 16),
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 6),
@@ -2744,3 +2324,4 @@ class _EditProfilePageState extends State<EditProfilePage> {
     );
   }
 }
+
