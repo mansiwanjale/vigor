@@ -77,6 +77,7 @@ class _ActiveWorkoutState extends State<ActiveWorkout> {
           title: widget.workout.title,
           duration: seconds,
           calories: widget.workout.calories,
+          reps: 0, // Added default value to fix compilation error
         ),
       ),
     );

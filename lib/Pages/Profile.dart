@@ -615,16 +615,16 @@ class _EditProfilePageState extends State<EditProfilePage> {
   final _usersRef   = FirebaseFirestore.instance.collection('users');
 
   final fields = ["name","age","gender","weight","height","goal","city","phone"];
-  // final fieldLabels = {
-  //   "name"  : "Full Name",
-  //   "age"   : "Age",
-  //   "gender": "Gender",
-  //   "weight": "Weight (kg)",
-  //   "height": "Height (cm)",
-  //   "goal"  : "Fitness Goal",
-  //   "city"  : "City",
-  //   "phone" : "Phone Number",
-  // };
+  final fieldLabels = {
+    "name"  : "Full Name",
+    "age"   : "Age",
+    "gender": "Gender",
+    "weight": "Weight (kg)",
+    "height": "Height (cm)",
+    "goal"  : "Fitness Goal",
+    "city"  : "City",
+    "phone" : "Phone Number",
+  };
 
   // ✅ ADDED LABELS (no logic change)
   Map<String, TextEditingController> controllers = {};
