@@ -34,16 +34,21 @@ class _RegisterPageState extends State<RegisterPage> {
     'https://cdn-icons-png.flaticon.com/128/3940/3940417.png',
     'https://cdn-icons-png.flaticon.com/128/1326/1326405.png',
     'https://cdn-icons-png.flaticon.com/128/1326/1326390.png',
+
+    //Greek Gods
     'https://cdn-icons-png.flaticon.com/128/4793/4793339.png',
     'https://cdn-icons-png.flaticon.com/128/4793/4793069.png',
     'https://cdn-icons-png.flaticon.com/128/4793/4793084.png',
-    // Fitness
-    'https://cdn-icons-png.flaticon.com/512/924/924915.png',
-    'https://cdn-icons-png.flaticon.com/512/194/194938.png',
-    'https://cdn-icons-png.flaticon.com/512/4333/4333609.png',
-    'https://cdn-icons-png.flaticon.com/512/4140/4140048.png',
-    'https://cdn-icons-png.flaticon.com/512/1154/1154444.png',
-    'https://cdn-icons-png.flaticon.com/512/6997/6997662.png',
+    'https://cdn-icons-png.flaticon.com/128/4793/4793111.png',
+    'https://cdn-icons-png.flaticon.com/128/4793/4793166.png',
+
+    // Random Characters
+    'https://cdn-icons-png.flaticon.com/128/4439/4439947.png',
+    'https://cdn-icons-png.flaticon.com/128/11107/11107554.png',
+    'https://cdn-icons-png.flaticon.com/128/1320/1320909.png',
+    'https://cdn-icons-png.flaticon.com/128/1921/1921048.png',
+    'https://cdn-icons-png.flaticon.com/128/2647/2647719.png',
+    'https://cdn-icons-png.flaticon.com/128/4646/4646249.png'
   ];
 
   String _hashPassword(String password) {
