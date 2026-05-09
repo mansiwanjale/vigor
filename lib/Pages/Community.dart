@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/services.dart';
 import 'SocialService.dart';
-import 'ChatPage.dart'; // we'll create this next
+import 'ChatPage.dart';
 import '../session.dart';
 import 'TribeChatPage.dart';
 
@@ -173,7 +173,6 @@ class _FriendsTabState extends State<FriendsTab> {
 
             return Stack(
               children: [
-                // ── Friends List ──
                 friendships.isEmpty
                     ? const Center(
                   child: Column(
@@ -215,7 +214,6 @@ class _FriendsTabState extends State<FriendsTab> {
                   },
                 ),
 
-                // ── Incoming Requests Bell ──
                 if (pendingRequests.isNotEmpty)
                   Positioned(
                     top: 12,
@@ -244,7 +242,6 @@ class _FriendsTabState extends State<FriendsTab> {
                     ),
                   ),
 
-                // ── Add Friend FAB ──
                 Positioned(
                   bottom: 16,
                   right: 16,
@@ -264,8 +261,6 @@ class _FriendsTabState extends State<FriendsTab> {
 
 // ───────────────TRIBES──────────────────────────────────────────────
 
-
-
 class TribesTab extends StatefulWidget {
   const TribesTab({super.key});
   @override
@@ -275,8 +270,10 @@ class TribesTab extends StatefulWidget {
 class _TribesTabState extends State<TribesTab> {
   final SocialService _social = SocialService();
 
-  // Category options
-  static const categories = ['Yoga & Zen', 'Weight Loss', 'Muscle Gain', 'Clean Eating', 'Endurance', 'General'];
+  static const categories = [
+    'Yoga & Zen', 'Weight Loss', 'Muscle Gain',
+    'Clean Eating', 'Endurance', 'General'
+  ];
   static const categoryIcons = {
     'Yoga & Zen': '🧘',
     'Weight Loss': '🔥',
@@ -285,6 +282,47 @@ class _TribesTabState extends State<TribesTab> {
     'Endurance': '🏃',
     'General': '⚡',
   };
+
+  // Featured public tribes – seeded once in Firestore with isPublic: true
+  // These are shown in the Discover section to all users.
+  static const _featuredTribes = [
+    {
+      'name': 'Morning Warriors',
+      'category': 'General',
+      'description': 'Rise early, train hard, conquer the day 🌅',
+      'emoji': '🌅',
+    },
+    {
+      'name': 'Burn & Tone',
+      'category': 'Weight Loss',
+      'description': 'Burn fat, build confidence, never give up 🔥',
+      'emoji': '🔥',
+    },
+    {
+      'name': 'Iron Club',
+      'category': 'Muscle Gain',
+      'description': 'Serious lifters only. PRs every week 💪',
+      'emoji': '🏋️',
+    },
+    {
+      'name': 'Zen & Flow',
+      'category': 'Yoga & Zen',
+      'description': 'Breathe, stretch, and find your centre 🧘',
+      'emoji': '🧘',
+    },
+    {
+      'name': 'Clean Plate Club',
+      'category': 'Clean Eating',
+      'description': 'Meal prep, macros, and mindful eating 🥗',
+      'emoji': '🥗',
+    },
+    {
+      'name': 'Long Run Crew',
+      'category': 'Endurance',
+      'description': 'Runners, cyclists & swimmers welcome 🏃',
+      'emoji': '🏃',
+    },
+  ];
 
   void _showCreateTribeSheet() {
     final nameCtrl = TextEditingController();
@@ -314,7 +352,6 @@ class _TribesTabState extends State<TribesTab> {
                 const Text("Build your fitness community",
                     style: TextStyle(color: Colors.grey)),
                 const SizedBox(height: 20),
-
                 TextField(
                   controller: nameCtrl,
                   maxLength: 30,
@@ -325,7 +362,6 @@ class _TribesTabState extends State<TribesTab> {
                   ),
                 ),
                 const SizedBox(height: 12),
-
                 TextField(
                   controller: descCtrl,
                   maxLines: 2,
@@ -337,7 +373,6 @@ class _TribesTabState extends State<TribesTab> {
                   ),
                 ),
                 const SizedBox(height: 12),
-
                 DropdownButtonFormField<String>(
                   value: selectedCategory,
                   decoration: const InputDecoration(
@@ -347,15 +382,13 @@ class _TribesTabState extends State<TribesTab> {
                   items: categories
                       .map((c) => DropdownMenuItem(
                     value: c,
-                    child: Text(
-                        '${categoryIcons[c]} $c'),
+                    child: Text('${categoryIcons[c]} $c'),
                   ))
                       .toList(),
                   onChanged: (val) =>
                       setSheetState(() => selectedCategory = val!),
                 ),
                 const SizedBox(height: 20),
-
                 SizedBox(
                   width: double.infinity,
                   height: 48,
@@ -452,6 +485,63 @@ class _TribesTabState extends State<TribesTab> {
     );
   }
 
+  // ── Members sheet — visible to ALL members (read-only for non-owners) ──
+  void _showMembersSheet(String tribeId, List<String> members,
+      {required bool isOwner}) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) => Column(
+        children: [
+          const Padding(
+            padding: EdgeInsets.all(16),
+            child: Text("Members",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          ),
+          Expanded(
+            child: ListView.builder(
+              itemCount: members.length,
+              itemBuilder: (_, i) {
+                final m = members[i];
+                final isMe = m == Session().currentUsername;
+                return ListTile(
+                  leading: CircleAvatar(
+                    backgroundColor:
+                    isMe ? Colors.blue[100] : Colors.grey[200],
+                    child: Text(m[0].toUpperCase()),
+                  ),
+                  title: Text(m + (isMe ? ' (you)' : '')),
+                  // Remove button only for owner, and only for other members
+                  trailing: isOwner && !isMe
+                      ? IconButton(
+                    icon: const Icon(Icons.remove_circle_outline,
+                        color: Colors.red),
+                    onPressed: () async {
+                      try {
+                        await _social.removeMember(tribeId, m);
+                        if (!ctx.mounted) return;
+                        Navigator.pop(ctx);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text("$m removed")),
+                        );
+                      } catch (e) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text(e.toString())));
+                      }
+                    },
+                  )
+                      : null,
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _showTribeOptions(DocumentSnapshot tribe) {
     final data = tribe.data() as Map<String, dynamic>;
     final isOwner = data['owner'] == Session().currentUsername;
@@ -473,7 +563,8 @@ class _TribesTabState extends State<TribesTab> {
               children: [
                 Text(
                   '${_TribesTabState.categoryIcons[data['category']] ?? '⚡'} ${data['name']}',
-                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                      fontSize: 20, fontWeight: FontWeight.bold),
                 ),
                 if (isOwner) ...[
                   const SizedBox(width: 8),
@@ -521,6 +612,18 @@ class _TribesTabState extends State<TribesTab> {
 
             const SizedBox(height: 8),
 
+            // ── View Members — available to EVERYONE ──
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: const Icon(Icons.people, color: Colors.blue),
+              title: Text(
+                  isOwner ? "Manage Members" : "View Members (${members.length})"),
+              onTap: () {
+                Navigator.pop(ctx);
+                _showMembersSheet(tribe.id, members, isOwner: isOwner);
+              },
+            ),
+
             // Invite a friend (owner only)
             if (isOwner)
               ListTile(
@@ -530,18 +633,6 @@ class _TribesTabState extends State<TribesTab> {
                 onTap: () {
                   Navigator.pop(ctx);
                   _showInviteFriendSheet(tribe.id);
-                },
-              ),
-
-            // Members list (owner only)
-            if (isOwner)
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: const Icon(Icons.people, color: Colors.blue),
-                title: const Text("Manage Members"),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  _showMembersSheet(tribe.id, members, isOwner: true);
                 },
               ),
 
@@ -567,7 +658,8 @@ class _TribesTabState extends State<TribesTab> {
             if (isOwner)
               ListTile(
                 contentPadding: EdgeInsets.zero,
-                leading: const Icon(Icons.delete_outline, color: Colors.red),
+                leading:
+                const Icon(Icons.delete_outline, color: Colors.red),
                 title: const Text("Delete Tribe",
                     style: TextStyle(color: Colors.red)),
                 onTap: () async {
@@ -638,11 +730,12 @@ class _TribesTabState extends State<TribesTab> {
                       if (!ctx.mounted) return;
                       Navigator.pop(ctx);
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text("${friends[i]} added to tribe!")),
+                        SnackBar(
+                            content: Text("${friends[i]} added to tribe!")),
                       );
                     } catch (e) {
-                      ScaffoldMessenger.of(context)
-                          .showSnackBar(SnackBar(content: Text(e.toString())));
+                      ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text(e.toString())));
                     }
                   },
                 ),
@@ -654,59 +747,153 @@ class _TribesTabState extends State<TribesTab> {
     );
   }
 
-  void _showMembersSheet(String tribeId, List<String> members,
-      {required bool isOwner}) {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (ctx) => Column(
-        children: [
-          const Padding(
-            padding: EdgeInsets.all(16),
-            child: Text("Members",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-          ),
-          Expanded(
-            child: ListView.builder(
-              itemCount: members.length,
-              itemBuilder: (_, i) {
-                final m = members[i];
-                final isMe = m == Session().currentUsername;
-                return ListTile(
-                  leading: CircleAvatar(
-                    backgroundColor:
-                    isMe ? Colors.blue[100] : Colors.grey[200],
-                    child: Text(m[0].toUpperCase()),
+  // ── Join a public/featured tribe by its Firestore document ID ──
+  Future<void> _joinPublicTribe(String tribeId, String tribeName) async {
+    try {
+      await _social.joinTribeById(tribeId);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Joined $tribeName! 💪")),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(e.toString())));
+    }
+  }
+
+  // ── Discover section: public tribes from Firestore ──
+  Widget _buildDiscoverSection(List<String> myTribeIds) {
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('tribes')
+          .where('isPublic', isEqualTo: true)
+          .limit(10)
+          .snapshots(),
+      builder: (context, snap) {
+        if (!snap.hasData) return const SizedBox.shrink();
+        final publicTribes = snap.data!.docs
+            .where((d) => !myTribeIds.contains(d.id))
+            .toList();
+        if (publicTribes.isEmpty) return const SizedBox.shrink();
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding:
+              const EdgeInsets.fromLTRB(16, 20, 16, 8),
+              child: Row(
+                children: [
+                  const Icon(Icons.explore, color: Colors.blue, size: 18),
+                  const SizedBox(width: 6),
+                  const Text(
+                    "Discover Communities",
+                    style: TextStyle(
+                        fontSize: 16, fontWeight: FontWeight.bold),
                   ),
-                  title: Text(m + (isMe ? ' (you)' : '')),
-                  trailing: isOwner && !isMe
-                      ? IconButton(
-                    icon: const Icon(Icons.remove_circle_outline,
-                        color: Colors.red),
-                    onPressed: () async {
-                      try {
-                        await _social.removeMember(tribeId, m);
-                        if (!ctx.mounted) return;
-                        Navigator.pop(ctx);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text("$m removed")),
-                        );
-                      } catch (e) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text(e.toString())));
-                      }
-                    },
-                  )
-                      : null,
-                );
-              },
+                ],
+              ),
             ),
-          ),
-        ],
-      ),
+            SizedBox(
+              height: 140,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                itemCount: publicTribes.length,
+                itemBuilder: (_, i) {
+                  final data =
+                  publicTribes[i].data() as Map<String, dynamic>;
+                  final members =
+                  List<String>.from(data['members'] ?? []);
+                  final emoji =
+                      categoryIcons[data['category']] ?? '⚡';
+
+                  return Container(
+                    width: 160,
+                    margin: const EdgeInsets.only(right: 10),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: _categoryGradient(
+                            data['category'] ?? 'General'),
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(emoji,
+                              style: const TextStyle(fontSize: 28)),
+                          const SizedBox(height: 4),
+                          Text(
+                            data['name'] ?? '',
+                            style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          Text(
+                            '${members.length} members',
+                            style: const TextStyle(
+                                color: Colors.white70,
+                                fontSize: 11),
+                          ),
+                          const Spacer(),
+                          SizedBox(
+                            width: double.infinity,
+                            height: 28,
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.white,
+                                foregroundColor: Colors.blue,
+                                padding: EdgeInsets.zero,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius:
+                                  BorderRadius.circular(8),
+                                ),
+                              ),
+                              onPressed: () => _joinPublicTribe(
+                                  publicTribes[i].id,
+                                  data['name'] ?? 'Tribe'),
+                              child: const Text("Join",
+                                  style: TextStyle(fontSize: 12)),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 8),
+          ],
+        );
+      },
     );
+  }
+
+  List<Color> _categoryGradient(String category) {
+    switch (category) {
+      case 'Yoga & Zen':
+        return [const Color(0xFF7B5EA7), const Color(0xFF9B7FCA)];
+      case 'Weight Loss':
+        return [const Color(0xFFFF6B35), const Color(0xFFFF9A5C)];
+      case 'Muscle Gain':
+        return [const Color(0xFF1565C0), const Color(0xFF1E88E5)];
+      case 'Clean Eating':
+        return [const Color(0xFF2E7D32), const Color(0xFF43A047)];
+      case 'Endurance':
+        return [const Color(0xFF00838F), const Color(0xFF00ACC1)];
+      default:
+        return [const Color(0xFF455A64), const Color(0xFF607D8B)];
+    }
   }
 
   @override
@@ -715,72 +902,120 @@ class _TribesTabState extends State<TribesTab> {
       stream: _social.myTribes,
       builder: (context, snap) {
         final tribes = snap.data?.docs ?? [];
+        final myTribeIds = tribes.map((d) => d.id).toList();
 
         return Stack(
           children: [
-            tribes.isEmpty
-                ? const Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.groups_outlined,
-                      size: 64, color: Colors.grey),
-                  SizedBox(height: 12),
-                  Text("No tribes yet — create or join one!",
-                      style: TextStyle(color: Colors.grey)),
-                ],
-              ),
-            )
-                : ListView.builder(
-              itemCount: tribes.length,
-              padding: const EdgeInsets.only(bottom: 80),
-              itemBuilder: (_, i) {
-                final data =
-                tribes[i].data() as Map<String, dynamic>;
-                final members =
-                List<String>.from(data['members'] ?? []);
-                final isOwner =
-                    data['owner'] == Session().currentUsername;
+            CustomScrollView(
+              slivers: [
+                // ── Discover section (always shown) ──
+                SliverToBoxAdapter(
+                  child: _buildDiscoverSection(myTribeIds),
+                ),
 
-                return Card(
-                  margin: const EdgeInsets.symmetric(
-                      horizontal: 12, vertical: 6),
-                  child: ListTile(
-                    leading: CircleAvatar(
-                      backgroundColor: Colors.blue[50],
-                      child: Text(
-                        categoryIcons[data['category']] ?? '⚡',
-                        style: const TextStyle(fontSize: 20),
-                      ),
-                    ),
-                    title: Row(
+                // ── My Tribes header ──
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                    child: Row(
                       children: [
-                        Text(data['name'] ?? ''),
-                        if (isOwner) ...[
-                          const SizedBox(width: 6),
-                          const Icon(Icons.star,
-                              size: 14, color: Colors.amber),
-                        ]
+                        const Icon(Icons.groups,
+                            color: Colors.blue, size: 18),
+                        const SizedBox(width: 6),
+                        const Text(
+                          "My Tribes",
+                          style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold),
+                        ),
                       ],
                     ),
-                    subtitle: Text(
-                        '${members.length} member${members.length == 1 ? '' : 's'} · ${data['category']}'),
-                    trailing: const Icon(Icons.chevron_right),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => TribeChatPage(
-                            tribeId: tribes[i].id,
-                            tribeName: data['name'] ?? 'Tribe',
+                  ),
+                ),
+
+                // ── My Tribes list or empty state ──
+                tribes.isEmpty
+                    ? SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 32),
+                    child: Column(
+                      children: const [
+                        Icon(Icons.groups_outlined,
+                            size: 48, color: Colors.grey),
+                        SizedBox(height: 8),
+                        Text(
+                          "You haven't joined any tribes yet.\nDiscover one above or create your own!",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(color: Colors.grey),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+                    : SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                        (_, i) {
+                      final data =
+                      tribes[i].data() as Map<String, dynamic>;
+                      final members =
+                      List<String>.from(data['members'] ?? []);
+                      final isOwner =
+                          data['owner'] == Session().currentUsername;
+
+                      return Card(
+                        margin: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 6),
+                        child: ListTile(
+                          leading: CircleAvatar(
+                            backgroundColor: Colors.blue[50],
+                            child: Text(
+                              categoryIcons[data['category']] ??
+                                  '⚡',
+                              style:
+                              const TextStyle(fontSize: 20),
+                            ),
                           ),
+                          title: Row(
+                            children: [
+                              Text(data['name'] ?? ''),
+                              if (isOwner) ...[
+                                const SizedBox(width: 6),
+                                const Icon(Icons.star,
+                                    size: 14,
+                                    color: Colors.amber),
+                              ]
+                            ],
+                          ),
+                          subtitle: Text(
+                              '${members.length} member${members.length == 1 ? '' : 's'} · ${data['category']}'),
+                          trailing:
+                          const Icon(Icons.chevron_right),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => TribeChatPage(
+                                  tribeId: tribes[i].id,
+                                  tribeName:
+                                  data['name'] ?? 'Tribe',
+                                ),
+                              ),
+                            );
+                          },
+                          onLongPress: () =>
+                              _showTribeOptions(tribes[i]),
                         ),
                       );
                     },
-                    onLongPress: () => _showTribeOptions(tribes[i]),
+                    childCount: tribes.length,
                   ),
-                );
-              },
+                ),
+
+                // Bottom padding for FABs
+                const SliverToBoxAdapter(
+                    child: SizedBox(height: 100)),
+              ],
             ),
 
             // ── FABs ──

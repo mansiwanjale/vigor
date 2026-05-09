@@ -231,7 +231,19 @@ class SocialService {
       'sentAt': FieldValue.serverTimestamp(),
     });
   }
+  Future<void> joinTribeById(String tribeId) async {
+    final me = Session().currentUsername;
+    final ref = _db.collection('tribes').doc(tribeId);
+    final snap = await ref.get();
+    if (!snap.exists) throw "Tribe not found";
 
+    final members = List<String>.from(snap['members'] ?? []);
+    if (members.contains(me)) throw "You're already in this tribe";
+
+    await ref.update({
+      'members': FieldValue.arrayUnion([me]),
+    });
+  }
   // Get my friends list (for invite picker)
   Future<List<String>> getMyFriendUsernames() async {
     final snap = await _db

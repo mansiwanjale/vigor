@@ -52,9 +52,20 @@ class _ActiveWorkoutState extends State<ActiveWorkout> {
     });
   }
 
+  /// ✅ FIXED CALORIE LOGIC
+  int calculateCalories() {
+    // calories burned per minute
+    double caloriesPerMinute = widget.workout.calories / 60;
+
+    // total burned calories based on actual workout time
+    return (caloriesPerMinute * (seconds / 60)).round();
+  }
+
   /// ✅ FINISH → SAVE → SHOW SUMMARY
   void _finishWorkout() async {
     timer?.cancel();
+
+    final burnedCalories = calculateCalories();
 
     // SAVE TO FIRESTORE HISTORY
     await FirestoreWorkoutService().saveWorkout(
@@ -62,7 +73,7 @@ class _ActiveWorkoutState extends State<ActiveWorkout> {
         title: widget.workout.title,
         category: widget.workout.category,
         duration: seconds,
-        calories: widget.workout.calories,
+        calories: burnedCalories,
         image: widget.workout.image,
       ),
     );
@@ -76,8 +87,8 @@ class _ActiveWorkoutState extends State<ActiveWorkout> {
         builder: (_) => WorkoutSummary(
           title: widget.workout.title,
           duration: seconds,
-          calories: widget.workout.calories,
-          reps: 0, // Added default value to fix compilation error
+          calories: burnedCalories,
+          reps: 0,
         ),
       ),
     );
@@ -86,10 +97,12 @@ class _ActiveWorkoutState extends State<ActiveWorkout> {
   String formatTime(int sec) {
     final m = sec ~/ 60;
     final s = sec % 60;
+
     return "${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}";
   }
 
-  double get progress => totalSeconds == 0 ? 0 : seconds / totalSeconds;
+  double get progress =>
+      totalSeconds == 0 ? 0 : seconds / totalSeconds;
 
   @override
   void dispose() {
@@ -99,13 +112,13 @@ class _ActiveWorkoutState extends State<ActiveWorkout> {
 
   @override
   Widget build(BuildContext context) {
+    final liveCalories = calculateCalories();
+
     return Scaffold(
       backgroundColor: const Color(0xFF0B1220),
-
       body: SafeArea(
         child: Column(
           children: [
-
             const SizedBox(height: 10),
 
             /// HEADER
@@ -144,30 +157,34 @@ class _ActiveWorkoutState extends State<ActiveWorkout> {
               padding: const EdgeInsets.all(25),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [Color(0xFF7C3AED), Color(0xFF4F46E5)],
+                  colors: [
+                    Color(0xFF7C3AED),
+                    Color(0xFF4F46E5),
+                  ],
                 ),
                 borderRadius: BorderRadius.circular(30),
               ),
               child: Column(
                 children: [
-
                   SizedBox(
                     width: 260,
                     height: 260,
                     child: Stack(
                       alignment: Alignment.center,
                       children: [
-
                         CircularProgressIndicator(
                           value: progress,
                           strokeWidth: 14,
                           backgroundColor: Colors.white24,
                           valueColor:
-                          const AlwaysStoppedAnimation(Colors.white),
+                          const AlwaysStoppedAnimation(
+                            Colors.white,
+                          ),
                         ),
 
                         Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisAlignment:
+                          MainAxisAlignment.center,
                           children: [
                             const Text(
                               "TIME",
@@ -177,7 +194,9 @@ class _ActiveWorkoutState extends State<ActiveWorkout> {
                                 letterSpacing: 2,
                               ),
                             ),
+
                             const SizedBox(height: 10),
+
                             Text(
                               formatTime(seconds),
                               style: const TextStyle(
@@ -186,10 +205,28 @@ class _ActiveWorkoutState extends State<ActiveWorkout> {
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
+
                             const SizedBox(height: 6),
+
                             Text(
-                              isPaused ? "Paused" : "Running",
-                              style: const TextStyle(color: Colors.white70),
+                              isPaused
+                                  ? "Paused"
+                                  : "Running",
+                              style: const TextStyle(
+                                color: Colors.white70,
+                              ),
+                            ),
+
+                            const SizedBox(height: 14),
+
+                            /// ✅ LIVE CALORIES
+                            Text(
+                              "$liveCalories kcal burned",
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                           ],
                         ),
@@ -202,14 +239,19 @@ class _ActiveWorkoutState extends State<ActiveWorkout> {
                   /// CATEGORY
                   Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 14, vertical: 8),
+                      horizontal: 14,
+                      vertical: 8,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.white24,
-                      borderRadius: BorderRadius.circular(20),
+                      borderRadius:
+                      BorderRadius.circular(20),
                     ),
                     child: Text(
                       widget.workout.category,
-                      style: const TextStyle(color: Colors.white),
+                      style: const TextStyle(
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                 ],
@@ -222,9 +264,9 @@ class _ActiveWorkoutState extends State<ActiveWorkout> {
             Padding(
               padding: const EdgeInsets.only(bottom: 30),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisAlignment:
+                MainAxisAlignment.center,
                 children: [
-
                   GestureDetector(
                     onTap: _togglePause,
                     child: Container(
@@ -234,7 +276,9 @@ class _ActiveWorkoutState extends State<ActiveWorkout> {
                         color: Colors.white10,
                       ),
                       child: Icon(
-                        isPaused ? Icons.play_arrow : Icons.pause,
+                        isPaused
+                            ? Icons.play_arrow
+                            : Icons.pause,
                         color: Colors.white,
                         size: 30,
                       ),
@@ -246,11 +290,16 @@ class _ActiveWorkoutState extends State<ActiveWorkout> {
                   ElevatedButton(
                     onPressed: _finishWorkout,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.redAccent,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 30, vertical: 14),
+                      backgroundColor:
+                      Colors.redAccent,
+                      padding:
+                      const EdgeInsets.symmetric(
+                        horizontal: 30,
+                        vertical: 14,
+                      ),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius:
+                        BorderRadius.circular(16),
                       ),
                     ),
                     child: const Text("Finish"),
