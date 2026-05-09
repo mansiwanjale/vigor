@@ -12,87 +12,28 @@ import 'package:vigor/Auth/login_page.dart' as auth_login;
 import 'package:vigor/Pages/Notifications.dart';
 import '../main.dart';
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Avatar preset model
-// ─────────────────────────────────────────────────────────────────────────────
-class AvatarPreset {
-  final String id;
-  final String label;
-  final Color bgColor;
-  final Color shirtColor;
-  final IconData icon;
-
-  const AvatarPreset({
-    required this.id,
-    required this.label,
-    required this.bgColor,
-    required this.shirtColor,
-    required this.icon,
-  });
-}
-
-const List<AvatarPreset> kAvatarPresets = [
-  AvatarPreset(
-      id: 'runner', label: 'Runner',
-      bgColor: Color(0xFFDCEEF5), shirtColor: Color(0xFF5C7C8A),
-      icon: Icons.directions_run_rounded),
-  AvatarPreset(
-      id: 'lifter', label: 'Lifter',
-      bgColor: Color(0xFFFCE4EC), shirtColor: Color(0xFFE07A5F),
-      icon: Icons.fitness_center_rounded),
-  AvatarPreset(
-      id: 'yogi', label: 'Yogi',
-      bgColor: Color(0xFFE8F5E9), shirtColor: Color(0xFF6FBF9F),
-      icon: Icons.self_improvement_rounded),
-  AvatarPreset(
-      id: 'cyclist', label: 'Cyclist',
-      bgColor: Color(0xFFFFF8E1), shirtColor: Color(0xFFFFB300),
-      icon: Icons.directions_bike_rounded),
-  AvatarPreset(
-      id: 'swimmer', label: 'Swimmer',
-      bgColor: Color(0xFFE3F2FD), shirtColor: Color(0xFF1976D2),
-      icon: Icons.pool_rounded),
-  AvatarPreset(
-      id: 'ninja', label: 'Ninja',
-      bgColor: Color(0xFFEDE7F6), shirtColor: Color(0xFF6A1B9A),
-      icon: Icons.sports_martial_arts_rounded),
-  AvatarPreset(
-      id: 'hiker', label: 'Hiker',
-      bgColor: Color(0xFFF1F8E9), shirtColor: Color(0xFF558B2F),
-      icon: Icons.hiking_rounded),
-  AvatarPreset(
-      id: 'boxer', label: 'Boxer',
-      bgColor: Color(0xFFFFEBEE), shirtColor: Color(0xFFC62828),
-      icon: Icons.sports_mma_rounded),
-  AvatarPreset(
-      id: 'dancer', label: 'Dancer',
-      bgColor: Color(0xFFFCE4EC), shirtColor: Color(0xFFAD1457),
-      icon: Icons.music_note_rounded),
+// ── Synced Avatar List (Matches RegisterPage) ───────────────────────────────
+final List<String> _kAvatars = [
+  'https://cdn-icons-png.flaticon.com/128/4775/4775505.png',
+  'https://cdn-icons-png.flaticon.com/128/14237/14237280.png',
+  'https://cdn-icons-png.flaticon.com/128/3940/3940417.png',
+  'https://cdn-icons-png.flaticon.com/128/1326/1326405.png',
+  'https://cdn-icons-png.flaticon.com/128/1326/1326390.png',
+  'https://cdn-icons-png.flaticon.com/128/4793/4793339.png',
+  'https://cdn-icons-png.flaticon.com/128/4793/4793069.png',
+  'https://cdn-icons-png.flaticon.com/128/4793/4793084.png',
+  'https://cdn-icons-png.flaticon.com/128/4793/4793111.png',
+  'https://cdn-icons-png.flaticon.com/128/4793/4793166.png',
+  'https://cdn-icons-png.flaticon.com/128/4439/4439947.png',
+  'https://cdn-icons-png.flaticon.com/128/11107/11107554.png',
+  'https://cdn-icons-png.flaticon.com/128/1320/1320909.png',
+  'https://cdn-icons-png.flaticon.com/128/1921/1921048.png',
+  'https://cdn-icons-png.flaticon.com/128/2647/2647719.png',
+  'https://cdn-icons-png.flaticon.com/128/4646/4646249.png'
 ];
 
-AvatarPreset _defaultPresetForAge(int age, String goal) {
-  final g = goal.toLowerCase();
-  if (g.contains('run') || g.contains('cardio'))
-    return kAvatarPresets.firstWhere((p) => p.id == 'runner');
-  if (g.contains('cycl') || g.contains('bike'))
-    return kAvatarPresets.firstWhere((p) => p.id == 'cyclist');
-  if (g.contains('swim'))
-    return kAvatarPresets.firstWhere((p) => p.id == 'swimmer');
-  if (g.contains('yoga') || g.contains('flex') || g.contains('stretch'))
-    return kAvatarPresets.firstWhere((p) => p.id == 'yogi');
-  if (g.contains('muscle') || g.contains('strength') ||
-      g.contains('lift') || g.contains('bulk'))
-    return kAvatarPresets.firstWhere((p) => p.id == 'lifter');
-  if (age < 18) return kAvatarPresets.firstWhere((p) => p.id == 'ninja');
-  if (age < 30) return kAvatarPresets.firstWhere((p) => p.id == 'runner');
-  if (age < 45) return kAvatarPresets.firstWhere((p) => p.id == 'lifter');
-  if (age < 60) return kAvatarPresets.firstWhere((p) => p.id == 'hiker');
-  return kAvatarPresets.firstWhere((p) => p.id == 'yogi');
-}
-
 // ─────────────────────────────────────────────────────────────────────────────
-// App-level settings notifier  (put this near the top of your main.dart too,
-// then pass vigorSettings down or use InheritedWidget / Provider)
+// App-level settings notifier
 // ─────────────────────────────────────────────────────────────────────────────
 class VigorSettings extends ChangeNotifier {
   bool _darkMode   = false;
@@ -123,7 +64,6 @@ class VigorSettings extends ChangeNotifier {
   }
 }
 
-// Singleton so ProfilePage and SettingsPage share the same instance
 final vigorSettings = VigorSettings();
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -235,7 +175,6 @@ class _SettingsPageState extends State<SettingsPage> {
     }
   }
 
-  // ── Theme-aware colors ──
   Color get _bg    => vigorSettings.darkMode ? const Color(0xFF1A1A2E) : AppColors.background;
   Color get _card  => vigorSettings.darkMode ? const Color(0xFF252540) : AppColors.white;
   Color get _text  => vigorSettings.darkMode ? Colors.white : AppColors.textPrimary;
@@ -301,7 +240,6 @@ class _SettingsPageState extends State<SettingsPage> {
         padding: const EdgeInsets.fromLTRB(20, 8, 20, 40),
         children: [
 
-          // ── Appearance ──
           _sectionTitle('APPEARANCE'),
           _settingsTile(
             icon: isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
@@ -341,7 +279,6 @@ class _SettingsPageState extends State<SettingsPage> {
 
           const SizedBox(height: 12),
 
-          // ── Notifications ──
           _sectionTitle('NOTIFICATIONS'),
           _settingsTile(
             icon: Icons.notifications_rounded,
@@ -402,7 +339,6 @@ class _SettingsPageState extends State<SettingsPage> {
 
           const SizedBox(height: 12),
 
-          // ── Activity Tracking ──
           _sectionTitle('ACTIVITY TRACKING'),
           _settingsTile(
             icon: Icons.directions_walk_rounded,
@@ -419,7 +355,6 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
           ),
 
-          // Daily goals card
           const SizedBox(height: 8),
           Container(
             padding: const EdgeInsets.all(16),
@@ -509,7 +444,6 @@ class _SettingsPageState extends State<SettingsPage> {
 
           const SizedBox(height: 12),
 
-          // ── Privacy & Security ──
           _sectionTitle('PRIVACY & SECURITY'),
           _settingsTile(
             icon: Icons.lock_rounded,
@@ -536,7 +470,6 @@ class _SettingsPageState extends State<SettingsPage> {
 
           const SizedBox(height: 12),
 
-          // ── About ──
           _sectionTitle('ABOUT'),
           _settingsTile(
             icon: Icons.info_outline_rounded,
@@ -611,164 +544,76 @@ class _ProfilePageState extends State<ProfilePage> {
     return 0;
   }
 
-  void _showAvatarOptions(BuildContext context, DocumentReference ref) {
+  Future<void> _pickImage(ImageSource source, DocumentReference userRef, DocumentReference profileRef) async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: source, imageQuality: 50);
+    if (pickedFile == null) return;
+
+    final bytes = await File(pickedFile.path).readAsBytes();
+    final base64String = base64Encode(bytes);
+
+    // Sync to both locations
+    await userRef.set({'avatarBase64': base64String, 'avatar': ''}, SetOptions(merge: true));
+    await profileRef.set({'avatarBase64': base64String, 'avatar': ''}, SetOptions(merge: true));
+    
+    if (mounted) {
+      Navigator.pop(context);
+    }
+  }
+
+  void _showAvatarOptions(BuildContext context, DocumentReference userRef, DocumentReference profileRef, String currentAvatar) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.white,
       isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-      ),
-      builder: (_) => DraggableScrollableSheet(
-        expand: false,
-        initialChildSize: 0.62,
-        minChildSize: 0.4,
-        maxChildSize: 0.88,
-        builder: (_, ctrl) => Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24, 14, 24, 0),
-              child: Column(children: [
-                Container(
-                    width: 40,
-                    height: 4,
-                    decoration: BoxDecoration(
-                        color: AppColors.inputField,
-                        borderRadius: BorderRadius.circular(2))),
-                const SizedBox(height: 16),
-                const Text('Choose Your Avatar',
-                    style: TextStyle(
-                        fontWeight: FontWeight.w800,
-                        fontSize: 18,
-                        color: AppColors.textPrimary,
-                        letterSpacing: -0.5)),
-                const SizedBox(height: 4),
-                const Text('Pick a character or upload your photo',
-                    style: TextStyle(
-                        color: AppColors.textSecondary, fontSize: 13)),
-                const SizedBox(height: 14),
-              ]),
-            ),
-            const Divider(height: 1),
-            Expanded(
-              child: ListView(
-                controller: ctrl,
-                padding: const EdgeInsets.all(20),
-                children: [
-                  _sheetLabel('Illustrated Characters'),
-                  const SizedBox(height: 12),
-                  GridView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    gridDelegate:
-                    const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 3,
-                      mainAxisSpacing: 12,
-                      crossAxisSpacing: 12,
-                      childAspectRatio: 0.82,
+      backgroundColor: Colors.transparent,
+      builder: (_) => Container(
+        height: MediaQuery.of(context).size.height * 0.65,
+        decoration: const BoxDecoration(color: AppColors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(28))),
+        padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
+        child: Column(children: [
+          Container(width: 40, height: 4, margin: const EdgeInsets.only(bottom: 20), decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(10))),
+          const Text('Choose Your Avatar', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 18, color: AppColors.textPrimary)),
+          const SizedBox(height: 20),
+          Expanded(
+            child: GridView.builder(
+              gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(maxCrossAxisExtent: 100, crossAxisSpacing: 15, mainAxisSpacing: 15),
+              itemCount: _kAvatars.length,
+              itemBuilder: (_, i) {
+                final url = _kAvatars[i];
+                bool isSelected = currentAvatar == url;
+                return GestureDetector(
+                  onTap: () async {
+                    Navigator.pop(context);
+                    // Update both collections and clear base64
+                    await userRef.set({'avatar': url, 'avatarBase64': ''}, SetOptions(merge: true));
+                    await profileRef.set({'avatar': url, 'avatarBase64': ''}, SetOptions(merge: true));
+                  },
+                  child: Container(
+                    decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: isSelected ? AppColors.green : Colors.transparent, width: 3)),
+                    padding: const EdgeInsets.all(2),
+                    child: Container(
+                      decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: Colors.black, width: 1)),
+                      child: CircleAvatar(backgroundImage: NetworkImage(url), backgroundColor: AppColors.card),
                     ),
-                    itemCount: kAvatarPresets.length,
-                    itemBuilder: (_, i) {
-                      final p = kAvatarPresets[i];
-                      return GestureDetector(
-                        onTap: () async {
-                          Navigator.pop(context);
-                          await ref.set(
-                              {'avatarBase64': '', 'avatarPresetId': p.id},
-                              SetOptions(merge: true));
-                        },
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: p.bgColor,
-                            borderRadius: BorderRadius.circular(18),
-                            border: Border.all(
-                                color: p.shirtColor.withOpacity(0.3),
-                                width: 1.5),
-                          ),
-                          child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Container(
-                                    width: 50,
-                                    height: 50,
-                                    decoration: BoxDecoration(
-                                        color: p.shirtColor,
-                                        shape: BoxShape.circle),
-                                    child: Icon(p.icon,
-                                        color: Colors.white, size: 24)),
-                                const SizedBox(height: 8),
-                                Text(p.label,
-                                    style: TextStyle(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w700,
-                                        color: p.shirtColor)),
-                              ]),
-                        ),
-                      );
-                    },
                   ),
-                  const SizedBox(height: 20),
-                  _sheetLabel('Upload Photo'),
-                  const SizedBox(height: 12),
-                  _photoOption(
-                      icon: Icons.camera_alt_rounded,
-                      label: 'Take a Photo',
-                      sublabel: 'Use your camera',
-                      color: AppColors.blue,
-                      onTap: () async {
-                        Navigator.pop(context);
-                        await _pickAndUpload(ImageSource.camera, ref);
-                      }),
-                  const SizedBox(height: 10),
-                  _photoOption(
-                      icon: Icons.photo_library_rounded,
-                      label: 'Choose from Gallery',
-                      sublabel: 'Pick from your photos',
-                      color: AppColors.greenDark,
-                      onTap: () async {
-                        Navigator.pop(context);
-                        await _pickAndUpload(ImageSource.gallery, ref);
-                      }),
-                  const SizedBox(height: 10),
-                  _photoOption(
-                      icon: Icons.refresh_rounded,
-                      label: 'Reset to Default',
-                      sublabel: 'Auto-select based on your age & goal',
-                      color: const Color(0xFFE07A5F),
-                      onTap: () async {
-                        Navigator.pop(context);
-                        await ref.set(
-                            {'avatarBase64': '', 'avatarPresetId': ''},
-                            SetOptions(merge: true));
-                      }),
-                  const SizedBox(height: 8),
-                ],
-              ),
+                );
+              },
             ),
-          ],
-        ),
+          ),
+          const SizedBox(height: 16),
+          _photoOption(icon: Icons.camera_alt_rounded, label: 'Take a Photo', color: AppColors.green, onTap: () async => await _pickImage(ImageSource.camera, userRef, profileRef)),
+          const SizedBox(height: 10),
+          _photoOption(icon: Icons.photo_library_rounded, label: 'Pick from Gallery', color: AppColors.blue, onTap: () async => await _pickImage(ImageSource.gallery, userRef, profileRef)),
+        ]),
       ),
     );
   }
 
-  Widget _sheetLabel(String t) => Text(t,
-      style: const TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.w700,
-          color: AppColors.textSecondary,
-          letterSpacing: 0.6));
-
-  Widget _photoOption(
-      {required IconData icon,
-        required String label,
-        required String sublabel,
-        required Color color,
-        required VoidCallback onTap}) {
+  Widget _photoOption({required IconData icon, required String label, required Color color, required VoidCallback onTap}) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding:
-        const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
         decoration: BoxDecoration(
             color: color.withOpacity(0.06),
             borderRadius: BorderRadius.circular(16),
@@ -776,797 +621,233 @@ class _ProfilePageState extends State<ProfilePage> {
         child: Row(children: [
           Container(
               padding: const EdgeInsets.all(9),
-              decoration: BoxDecoration(
-                  color: color.withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(11)),
+              decoration: BoxDecoration(color: color.withOpacity(0.12), borderRadius: BorderRadius.circular(11)),
               child: Icon(icon, color: color, size: 20)),
           const SizedBox(width: 14),
-          Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(label,
-                style: TextStyle(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 14,
-                    color: color)),
-            Text(sublabel,
-                style: const TextStyle(
-                    color: AppColors.textSecondary, fontSize: 11)),
-          ]),
+          Text(label, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: color)),
           const Spacer(),
-          Icon(Icons.chevron_right_rounded,
-              color: color.withOpacity(0.4), size: 20),
+          Icon(Icons.chevron_right_rounded, color: color.withOpacity(0.4), size: 20),
         ]),
       ),
     );
   }
 
-  Future<void> _pickAndUpload(
-      ImageSource source, DocumentReference ref) async {
-    final picker = ImagePicker();
-    final XFile? file = await picker.pickImage(
-        source: source,
-        maxWidth: 400,
-        maxHeight: 400,
-        imageQuality: 70);
-    if (file == null) return;
-    final bytes = await File(file.path).readAsBytes();
-    await ref.set(
-        {'avatarBase64': base64Encode(bytes), 'avatarPresetId': ''},
-        SetOptions(merge: true));
-  }
-
   @override
   Widget build(BuildContext context) {
-    final userProfileRef = FirebaseFirestore.instance
-        .collection('user_profiles')
-        .doc(widget.username);
-    final usersRef = FirebaseFirestore.instance
-        .collection('users')
-        .doc(widget.username);
+    final userProfileRef = FirebaseFirestore.instance.collection('user_profiles').doc(widget.username);
+    final usersRef = FirebaseFirestore.instance.collection('users').doc(widget.username);
 
-    final profileFields = [
-      'name', 'age', 'gender', 'weight', 'height',
-      'goal', 'city', 'fitnessLevel', 'preferredActivity',
-      'weeklyGoalDays', 'bio',
-    ];
+    final profileFields = ['name', 'age', 'gender', 'weight', 'height', 'goal', 'city', 'fitnessLevel', 'preferredActivity', 'weeklyGoalDays', 'bio'];
 
     return Scaffold(
       backgroundColor: AppColors.background,
       body: StreamBuilder<DocumentSnapshot>(
         stream: usersRef.snapshots(),
         builder: (context, authSnap) {
-          final authData = authSnap.hasData
-              ? (authSnap.data!.data() as Map<String, dynamic>? ?? {})
-              : <String, dynamic>{};
-
+          final authData = (authSnap.data?.data() as Map<String, dynamic>?) ?? {};
           return StreamBuilder<DocumentSnapshot>(
             stream: userProfileRef.snapshots(),
             builder: (context, profileSnap) {
-              if (!profileSnap.hasData) {
-                return const Center(
-                    child: CircularProgressIndicator(
-                        color: AppColors.green));
-              }
-
-              final profileData = profileSnap.data!.data()
-              as Map<String, dynamic>? ??
-                  {};
+              if (!profileSnap.hasData) return const Center(child: CircularProgressIndicator(color: AppColors.green));
+              final profileData = (profileSnap.data?.data() as Map<String, dynamic>?) ?? {};
               final merged = {...profileData, ...authData};
 
-              final String displayName =
-              merged['name']?.toString().isNotEmpty == true
-                  ? merged['name']
-                  : widget.username;
-              final String displayCity =
-              merged['city']?.toString().isNotEmpty == true
-                  ? merged['city']
-                  : 'No city set';
-              final String displayGoal =
-              merged['goal']?.toString().isNotEmpty == true
-                  ? merged['goal']
-                  : '';
-              final String displayBio =
-              merged['bio']?.toString().isNotEmpty == true
-                  ? merged['bio']
-                  : '';
-              final String displayFitnessLevel =
-              merged['fitnessLevel']?.toString().isNotEmpty == true
-                  ? merged['fitnessLevel']
-                  : '';
-              final String displayActivity =
-              merged['preferredActivity']?.toString().isNotEmpty == true
-                  ? merged['preferredActivity']
-                  : '';
+              final String displayName = merged['name']?.toString() ?? widget.username;
+              final String displayCity = merged['city']?.toString() ?? 'No city set';
+              final String displayGoal = merged['goal']?.toString() ?? '';
+              final String displayBio = merged['bio']?.toString() ?? '';
+              final String displayFitnessLevel = merged['fitnessLevel']?.toString() ?? '';
+              final String displayActivity = merged['preferredActivity']?.toString() ?? '';
 
-              final int age = _parse(merged['age']);
-              final String gender =
-                  merged['gender']?.toString().toLowerCase() ?? '';
+              final String avatarUrl = merged['avatar']?.toString() ?? '';
+              final String avatarBase64 = merged['avatarBase64']?.toString() ?? '';
 
-              final String avatarBase64 =
-                  profileData['avatarBase64']?.toString() ?? '';
-              final String avatarPresetId =
-                  profileData['avatarPresetId']?.toString() ?? '';
-
-              AvatarPreset resolvedPreset = avatarPresetId.isNotEmpty
-                  ? (kAvatarPresets.any((p) => p.id == avatarPresetId)
-                  ? kAvatarPresets
-                  .firstWhere((p) => p.id == avatarPresetId)
-                  : _defaultPresetForAge(age, displayGoal))
-                  : _defaultPresetForAge(age, displayGoal);
-
-              int filled = profileFields
-                  .where((f) =>
-              merged[f] != null &&
-                  merged[f].toString().isNotEmpty)
-                  .length;
+              int filled = profileFields.where((f) => merged[f] != null && merged[f].toString().isNotEmpty).length;
               double completionRatio = filled / profileFields.length;
               int percent = (completionRatio * 100).toInt();
               bool isComplete = percent >= 100;
 
-              final String initials = displayName
-                  .trim()
-                  .split(' ')
-                  .where((w) => w.isNotEmpty)
-                  .take(2)
-                  .map((w) => w[0].toUpperCase())
-                  .join();
+              final String initials = displayName.trim().split(' ').where((w) => w.isNotEmpty).take(2).map((w) => w[0].toUpperCase()).join();
 
-              int stepGoal = _parse(profileData['stepGoal']);
-              int safeGoal = stepGoal == 0 ? 6000 : stepGoal;
-
-              // Water
+              int safeGoal = _parse(profileData['stepGoal']);
+              if (safeGoal == 0) safeGoal = 6000;
               int water = _parse(profileData['water']);
               int waterGoal = _parse(profileData['waterGoal']);
-              int safeWaterGoal = waterGoal == 0 ? 2000 : waterGoal;
+              if (waterGoal == 0) waterGoal = 2000;
 
               double distanceKm = _liveSteps * 0.000762;
 
               return StreamBuilder<QuerySnapshot>(
-                stream: FirebaseFirestore.instance
-                    .collection('workout_history')
-                    .where('username', isEqualTo: widget.username)
-                    .snapshots(),
+                stream: FirebaseFirestore.instance.collection('workout_history').where('username', isEqualTo: widget.username).snapshots(),
                 builder: (context, workoutSnap) {
-                  int totalWorkouts = 0;
-                  int totalBurned = 0;
-                  int streak = 0;
-                  final now = DateTime.now();
-
+                  int totalWorkouts = 0; int totalBurned = 0; int streak = 0;
                   if (workoutSnap.hasData) {
                     final dates = <DateTime>{};
                     for (var d in workoutSnap.data!.docs) {
                       final m = d.data() as Map<String, dynamic>;
                       totalWorkouts++;
-                      totalBurned += _parse(m['calories'] ??
-                          m['burned'] ??
-                          m['caloriesBurned']);
+                      totalBurned += _parse(m['calories'] ?? m['burned'] ?? m['caloriesBurned']);
                       final ts = m['timestamp'];
                       if (ts is Timestamp) {
                         final dt = ts.toDate();
-                        dates.add(
-                            DateTime(dt.year, dt.month, dt.day));
+                        dates.add(DateTime(dt.year, dt.month, dt.day));
                       }
                     }
-                    final sorted = dates.toList()
-                      ..sort((a, b) => b.compareTo(a));
-                    DateTime check =
-                    DateTime(now.year, now.month, now.day);
+                    final sorted = dates.toList()..sort((a, b) => b.compareTo(a));
+                    DateTime check = DateTime.now();
+                    check = DateTime(check.year, check.month, check.day);
                     for (final d in sorted) {
-                      if (d == check ||
-                          d ==
-                              check.subtract(
-                                  const Duration(days: 1))) {
-                        streak++;
-                        check = check
-                            .subtract(const Duration(days: 1));
-                      } else {
-                        break;
-                      }
+                      if (d == check || d == check.subtract(const Duration(days: 1))) {
+                        streak++; check = d == check ? check.subtract(const Duration(days: 1)) : d.subtract(const Duration(days: 1));
+                      } else break;
                     }
                   }
 
                   return StreamBuilder<QuerySnapshot>(
-                    stream: FirebaseFirestore.instance
-                        .collection('meals')
-                        .where('userId',
-                        isEqualTo: widget.username)
-                        .snapshots(),
+                    stream: FirebaseFirestore.instance.collection('meals').where('userId', isEqualTo: widget.username).snapshots(),
                     builder: (context, mealSnap) {
                       int totalGained = 0;
-
                       if (mealSnap.hasData) {
                         for (var d in mealSnap.data!.docs) {
-                          final m =
-                          d.data() as Map<String, dynamic>;
-                          totalGained += _parse(
-                              m['calories'] ?? m['gained']);
+                          final m = d.data() as Map<String, dynamic>;
+                          totalGained += _parse(m['calories'] ?? m['gained']);
                         }
                       }
+                      int netCalories = totalGained - totalBurned;
 
-                      int netCalories =
-                          totalGained - totalBurned;
-
-                      return CustomScrollView(
-                        slivers: [
-
-                          // ── Header ────────────────────────────────────
-                          SliverToBoxAdapter(
-                            child: Container(
-                              color: AppColors.blue,
-                              padding: const EdgeInsets.fromLTRB(
-                                  24, 56, 24, 24),
-                              child: Column(
-                                crossAxisAlignment:
-                                CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    crossAxisAlignment:
-                                    CrossAxisAlignment.start,
-                                    children: [
-                                      GestureDetector(
-                                        onTap: () =>
-                                            _showAvatarOptions(
-                                                context,
-                                                userProfileRef),
-                                        child: _AvatarWithRing(
-                                          initials: initials,
-                                          isFemale: gender == 'female' ||
-                                              gender == 'f',
-                                          avatarBase64: avatarBase64,
-                                          resolvedPreset:
-                                          resolvedPreset,
-                                          completionRatio:
-                                          completionRatio,
-                                          percent: percent,
-                                          isComplete: isComplete,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 16),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                          CrossAxisAlignment
-                                              .start,
-                                          children: [
-                                            const SizedBox(
-                                                height: 4),
-                                            Text(displayName,
-                                                style: const TextStyle(
-                                                    color: AppColors
-                                                        .white,
-                                                    fontSize: 20,
-                                                    fontWeight:
-                                                    FontWeight
-                                                        .w800,
-                                                    letterSpacing:
-                                                    -0.5)),
-                                            if (displayBio
-                                                .isNotEmpty) ...[
-                                              const SizedBox(
-                                                  height: 3),
-                                              Text(displayBio,
-                                                  style: const TextStyle(
-                                                      color: Colors
-                                                          .white70,
-                                                      fontSize: 12,
-                                                      fontStyle:
-                                                      FontStyle
-                                                          .italic),
-                                                  maxLines: 2,
-                                                  overflow: TextOverflow
-                                                      .ellipsis),
-                                            ],
-                                            const SizedBox(
-                                                height: 6),
-                                            Row(children: [
-                                              const Icon(
-                                                  Icons
-                                                      .location_on_rounded,
-                                                  color: Colors
-                                                      .white54,
-                                                  size: 12),
-                                              const SizedBox(
-                                                  width: 3),
-                                              Flexible(
-                                                  child: Text(
-                                                      displayCity,
-                                                      style: const TextStyle(
-                                                          color: Colors
-                                                              .white54,
-                                                          fontSize:
-                                                          12),
-                                                      overflow:
-                                                      TextOverflow
-                                                          .ellipsis)),
-                                              if (displayActivity
-                                                  .isNotEmpty) ...[
-                                                const SizedBox(
-                                                    width: 10),
-                                                const Icon(
-                                                    Icons
-                                                        .sports_score_rounded,
-                                                    color: Colors
-                                                        .white54,
-                                                    size: 12),
-                                                const SizedBox(
-                                                    width: 3),
-                                                Flexible(
-                                                    child: Text(
-                                                        displayActivity,
-                                                        style: const TextStyle(
-                                                            color: Colors
-                                                                .white54,
-                                                            fontSize:
-                                                            12),
-                                                        overflow:
-                                                        TextOverflow
-                                                            .ellipsis)),
-                                              ],
-                                            ]),
-                                            const SizedBox(
-                                                height: 8),
-                                            _PedometerChip(
-                                                status:
-                                                _pedestrianStatus,
-                                                liveSteps:
-                                                _liveSteps),
-                                          ],
-                                        ),
-                                      ),
-                                      // Action buttons column
-                                      Column(children: [
-                                        _headerIconBtn(
-                                            icon: Icons.edit_rounded,
-                                            onTap: () =>
-                                                Navigator.push(
-                                                    context,
-                                                    MaterialPageRoute(
-                                                        builder: (_) =>
-                                                            EditProfilePage(
-                                                                username:
-                                                                widget.username)))),
-                                        const SizedBox(height: 8),
-                                        _headerIconBtn(
-                                            icon: Icons
-                                                .notifications_rounded,
-                                            onTap: () =>
-                                                Navigator.push(
-                                                    context,
-                                                    MaterialPageRoute(
-                                                        builder: (_) =>
-                                                            ActivityPage(
-                                                                username:
-                                                                widget.username)))),
-                                        const SizedBox(height: 8),
-                                        // Settings button
-                                        _headerIconBtn(
-                                            icon: Icons
-                                                .settings_rounded,
-                                            onTap: () =>
-                                                Navigator.push(
-                                                    context,
-                                                    MaterialPageRoute(
-                                                        builder: (_) =>
-                                                            SettingsPage(
-                                                                username:
-                                                                widget.username)))),
-                                      ]),
-                                    ],
-                                  ),
-                                  if (displayFitnessLevel
-                                      .isNotEmpty ||
-                                      displayGoal.isNotEmpty) ...[
-                                    const SizedBox(height: 14),
-                                    Wrap(spacing: 8, children: [
-                                      if (displayFitnessLevel
-                                          .isNotEmpty)
-                                        _headerTag(
-                                            Icons.bar_chart_rounded,
-                                            displayFitnessLevel),
-                                      if (displayGoal.isNotEmpty)
-                                        _headerTag(
-                                            Icons.flag_rounded,
-                                            displayGoal),
-                                    ]),
-                                  ],
-                                ],
+                      return CustomScrollView(slivers: [
+                        SliverToBoxAdapter(
+                          child: Container(
+                            decoration: const BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topLeft, end: Alignment.bottomRight,
+                                colors: [Color(0xFF3A6B82), Color(0xFF2A5068), Color(0xFF1E3D52)],
                               ),
                             ),
-                          ),
-
-                          // ── Body ──────────────────────────────────────
-                          SliverToBoxAdapter(
-                            child: Padding(
-                              padding: const EdgeInsets.all(20),
-                              child: Column(
-                                crossAxisAlignment:
-                                CrossAxisAlignment.start,
-                                children: [
-
-                                  // ── Quick stat tiles ──
+                            padding: const EdgeInsets.fromLTRB(24, 56, 24, 20),
+                            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                              Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                                GestureDetector(
+                                  onTap: () => _showAvatarOptions(context, usersRef, userProfileRef, avatarUrl),
+                                  child: _AvatarWithRing(initials: initials, avatarUrl: avatarUrl, avatarBase64: avatarBase64, completionRatio: completionRatio, percent: percent, isComplete: isComplete),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                                  Text(displayName, style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w800, letterSpacing: -0.5)),
+                                  if (displayBio.isNotEmpty) Text(displayBio, style: const TextStyle(color: Colors.white60, fontSize: 12, fontStyle: FontStyle.italic), maxLines: 2, overflow: TextOverflow.ellipsis),
+                                  const SizedBox(height: 6),
                                   Row(children: [
-                                    _statTile(
-                                        'Total Workouts',
-                                        '$totalWorkouts',
-                                        Icons.fitness_center_rounded,
-                                        const Color(0xFF5C7C8A)),
-                                    const SizedBox(width: 10),
-                                    _statTile(
-                                        'Streak',
-                                        '$streak days',
-                                        Icons
-                                            .local_fire_department_rounded,
-                                        const Color(0xFFE07A5F)),
+                                    const Icon(Icons.location_on_rounded, color: Colors.white54, size: 12),
+                                    const SizedBox(width: 3),
+                                    Flexible(child: Text(displayCity, style: const TextStyle(color: Colors.white54, fontSize: 12), overflow: TextOverflow.ellipsis)),
                                   ]),
-
-                                  const SizedBox(height: 24),
-
-                                  // ── Today's Steps (single card) ──
-                                  _sectionTitle("Today's Steps"),
-                                  const SizedBox(height: 12),
-                                  Container(
-                                    padding: const EdgeInsets.all(20),
-                                    decoration: BoxDecoration(
-                                        color: AppColors.white,
-                                        borderRadius:
-                                        BorderRadius.circular(
-                                            20)),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                      CrossAxisAlignment.start,
-                                      children: [
-                                        Row(children: [
-                                          _iconBox(
-                                            icon: _pedestrianStatus ==
-                                                'walking'
-                                                ? Icons
-                                                .directions_walk_rounded
-                                                : Icons
-                                                .accessibility_new_rounded,
-                                            color: const Color(
-                                                0xFF5C7C8A),
-                                            bg: const Color(
-                                                0xFFDCEEF5),
-                                          ),
-                                          const SizedBox(width: 14),
-                                          Expanded(
-                                            child: Column(
-                                              crossAxisAlignment:
-                                              CrossAxisAlignment
-                                                  .start,
-                                              children: [
-                                                Text(
-                                                    '$_liveSteps steps',
-                                                    style: const TextStyle(
-                                                        fontSize: 20,
-                                                        fontWeight:
-                                                        FontWeight
-                                                            .w700,
-                                                        color: AppColors
-                                                            .textPrimary)),
-                                                Text(
-                                                    'Goal: $safeGoal steps · ${distanceKm.toStringAsFixed(2)} km',
-                                                    style: const TextStyle(
-                                                        color: AppColors
-                                                            .textSecondary,
-                                                        fontSize: 12)),
-                                              ],
-                                            ),
-                                          ),
-                                          Text(
-                                            '${((_liveSteps / safeGoal) * 100).clamp(0, 100).toInt()}%',
-                                            style: const TextStyle(
-                                                color: Color(
-                                                    0xFF5C7C8A),
-                                                fontWeight:
-                                                FontWeight.w700,
-                                                fontSize: 16),
-                                          ),
-                                        ]),
-                                        const SizedBox(height: 14),
-                                        _progressBar(
-                                            value: (_liveSteps /
-                                                safeGoal)
-                                                .clamp(0.0, 1.0),
-                                            color: const Color(
-                                                0xFF5C7C8A)),
-                                        const SizedBox(height: 10),
-                                        Text(
-                                          _pedestrianStatus ==
-                                              'walking'
-                                              ? '🚶 You\'re walking!'
-                                              : '💤 Standing still',
-                                          style: TextStyle(
-                                              fontSize: 12,
-                                              color: _pedestrianStatus ==
-                                                  'walking'
-                                                  ? AppColors.greenDark
-                                                  : AppColors
-                                                  .textSecondary,
-                                              fontWeight:
-                                              FontWeight.w500),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-
-                                  const SizedBox(height: 24),
-
-                                  // ── Calories (Burn & Gain only) ──
-                                  _sectionTitle('Calories'),
-                                  const SizedBox(height: 12),
-                                  Container(
-                                    padding: const EdgeInsets.all(20),
-                                    decoration: BoxDecoration(
-                                        color: AppColors.white,
-                                        borderRadius:
-                                        BorderRadius.circular(
-                                            20)),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                      CrossAxisAlignment.start,
-                                      children: [
-                                        Row(children: [
-                                          Expanded(
-                                              child: _calorieBlock(
-                                                icon: Icons
-                                                    .restaurant_rounded,
-                                                label: 'Calories Gained',
-                                                value: '$totalGained',
-                                                unit: 'kcal',
-                                                color: const Color(
-                                                    0xFF6FBF9F),
-                                                bg: const Color(
-                                                    0xFFE8F5E9),
-                                              )),
-                                          const SizedBox(width: 12),
-                                          Expanded(
-                                              child: _calorieBlock(
-                                                icon: Icons
-                                                    .local_fire_department_rounded,
-                                                label: 'Calories Burned',
-                                                value: '$totalBurned',
-                                                unit: 'kcal',
-                                                color: const Color(
-                                                    0xFFE07A5F),
-                                                bg: const Color(
-                                                    0xFFFFEBEE),
-                                              )),
-                                        ]),
-                                        const SizedBox(height: 16),
-                                        const Divider(
-                                            height: 1,
-                                            color: Color(0xFFF0F0F0)),
-                                        const SizedBox(height: 14),
-                                        Row(
-                                          mainAxisAlignment:
-                                          MainAxisAlignment
-                                              .spaceBetween,
-                                          children: [
-                                            Row(children: [
-                                              Icon(
-                                                netCalories > 0
-                                                    ? Icons
-                                                    .trending_up_rounded
-                                                    : Icons
-                                                    .trending_down_rounded,
-                                                size: 16,
-                                                color: netCalories >
-                                                    0
-                                                    ? const Color(
-                                                    0xFFE07A5F)
-                                                    : AppColors
-                                                    .greenDark,
-                                              ),
-                                              const SizedBox(
-                                                  width: 6),
-                                              const Text(
-                                                  'Net (Gained − Burned)',
-                                                  style: TextStyle(
-                                                      fontSize: 12,
-                                                      color: AppColors
-                                                          .textSecondary,
-                                                      fontWeight:
-                                                      FontWeight
-                                                          .w500)),
-                                            ]),
-                                            Text(
-                                              '${netCalories > 0 ? '+' : ''}$netCalories kcal',
-                                              style: TextStyle(
-                                                  fontSize: 13,
-                                                  fontWeight:
-                                                  FontWeight.w700,
-                                                  color: netCalories >
-                                                      0
-                                                      ? const Color(
-                                                      0xFFE07A5F)
-                                                      : AppColors
-                                                      .greenDark),
-                                            ),
-                                          ],
-                                        ),
-                                        const SizedBox(height: 6),
-                                        Text(
-                                          netCalories > 0
-                                              ? 'You\'re in a calorie surplus. Consider more activity!'
-                                              : 'Great! You\'re in a calorie deficit. Keep it up!',
-                                          style: TextStyle(
-                                              fontSize: 11,
-                                              color: netCalories > 0
-                                                  ? const Color(
-                                                  0xFFE07A5F)
-                                                  : AppColors
-                                                  .greenDark),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-
-                                  const SizedBox(height: 24),
-
-                                  // ── Hydration (from old code) ──
-                                  _sectionTitle('Hydration'),
-                                  const SizedBox(height: 12),
-                                  Container(
-                                    padding: const EdgeInsets.all(20),
-                                    decoration: BoxDecoration(
-                                        color: AppColors.white,
-                                        borderRadius:
-                                        BorderRadius.circular(
-                                            20)),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                      CrossAxisAlignment.start,
-                                      children: [
-                                        Row(children: [
-                                          Container(
-                                            padding:
-                                            const EdgeInsets.all(
-                                                10),
-                                            decoration:
-                                            BoxDecoration(
-                                              color: const Color(
-                                                  0xFFDCEEF5),
-                                              borderRadius:
-                                              BorderRadius
-                                                  .circular(12),
-                                            ),
-                                            child: const Icon(
-                                                Icons
-                                                    .water_drop_rounded,
-                                                color: Color(
-                                                    0xFF5C7C8A),
-                                                size: 20),
-                                          ),
-                                          const SizedBox(width: 14),
-                                          Column(
-                                            crossAxisAlignment:
-                                            CrossAxisAlignment
-                                                .start,
-                                            children: [
-                                              Text('$water ml',
-                                                  style: const TextStyle(
-                                                      fontSize: 20,
-                                                      fontWeight:
-                                                      FontWeight
-                                                          .w700,
-                                                      color: AppColors
-                                                          .textPrimary)),
-                                              Text(
-                                                  'of $safeWaterGoal ml daily goal',
-                                                  style: const TextStyle(
-                                                      color: AppColors
-                                                          .textSecondary,
-                                                      fontSize: 12)),
-                                            ],
-                                          ),
-                                          const Spacer(),
-                                          Text(
-                                            '${((water / safeWaterGoal) * 100).clamp(0, 100).toInt()}%',
-                                            style: const TextStyle(
-                                                color: AppColors.blue,
-                                                fontWeight:
-                                                FontWeight.w700,
-                                                fontSize: 16),
-                                          ),
-                                        ]),
-                                        const SizedBox(height: 14),
-                                        ClipRRect(
-                                          borderRadius:
-                                          BorderRadius.circular(
-                                              6),
-                                          child:
-                                          LinearProgressIndicator(
-                                            value: (water /
-                                                safeWaterGoal)
-                                                .clamp(0.0, 1.0),
-                                            minHeight: 6,
-                                            backgroundColor:
-                                            AppColors.inputField,
-                                            valueColor:
-                                            const AlwaysStoppedAnimation(
-                                                Color(
-                                                    0xFF5C7C8A)),
-                                          ),
-                                        ),
-                                        const SizedBox(height: 16),
-                                        Row(children: [
-                                          Expanded(
-                                            child: _WaterButton(
-                                              imagePath:
-                                              'assets/images/GLASS.png',
-                                              label: '+200 ml',
-                                              onTap: () async {
-                                                await userProfileRef
-                                                    .set(
-                                                  {
-                                                    'water': FieldValue
-                                                        .increment(200)
-                                                  },
-                                                  SetOptions(
-                                                      merge: true),
-                                                );
-                                                await showWaterNotification(
-                                                    200);
-                                              },
-                                            ),
-                                          ),
-                                          const SizedBox(width: 12),
-                                          Expanded(
-                                            child: _WaterButton(
-                                              imagePath:
-                                              'assets/images/JUG.png',
-                                              label: '+500 ml',
-                                              onTap: () async {
-                                                await userProfileRef
-                                                    .set(
-                                                  {
-                                                    'water': FieldValue
-                                                        .increment(500)
-                                                  },
-                                                  SetOptions(
-                                                      merge: true),
-                                                );
-                                                await showWaterNotification(
-                                                    500);
-                                              },
-                                              isPrimary: true,
-                                            ),
-                                          ),
-                                        ]),
-                                      ],
-                                    ),
-                                  ),
-
-                                  const SizedBox(height: 24),
-
-                                  _actionTile(
-                                    icon: Icons.logout_rounded,
-                                    label: 'Logout',
-                                    sublabel: 'Sign out of your account',
-                                    iconColor:
-                                    const Color(0xFFE07A5F),
-                                    textColor:
-                                    const Color(0xFFE07A5F),
-                                    onTap: () async {
-                                      await FirebaseAuth.instance
-                                          .signOut();
-                                      Navigator.pushAndRemoveUntil(
-                                          context,
-                                          MaterialPageRoute(
-                                              builder: (_) =>
-                                              const auth_login
-                                                  .LoginPage()),
-                                              (route) => false);
-                                    },
-                                  ),
-
-                                  const SizedBox(height: 32),
-                                ],
-                              ),
-                            ),
+                                  const SizedBox(height: 8),
+                                  _PedometerChip(status: _pedestrianStatus, liveSteps: _liveSteps),
+                                ])),
+                                _headerIconBtn(icon: Icons.notifications_rounded, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ActivityPage(username: widget.username)))),
+                              ]),
+                              const SizedBox(height: 14),
+                              Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                                Wrap(spacing: 8, children: [
+                                  if (displayFitnessLevel.isNotEmpty) _headerTag(Icons.bar_chart_rounded, displayFitnessLevel),
+                                  if (displayGoal.isNotEmpty) _headerTag(Icons.flag_rounded, displayGoal),
+                                ]),
+                                Row(children: [
+                                  _headerIconBtn(icon: Icons.edit_rounded, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => EditProfilePage(username: widget.username)))),
+                                  const SizedBox(width: 8),
+                                  _headerIconBtn(icon: Icons.settings_rounded, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => SettingsPage(username: widget.username)))),
+                                ]),
+                              ]),
+                            ]),
                           ),
-                        ],
-                      );
+                        ),
+                        SliverToBoxAdapter(
+                          child: Padding(padding: const EdgeInsets.all(20), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                            Row(children: [
+                              _statTile('Workouts', '$totalWorkouts', Icons.fitness_center_rounded, const Color(0xFF5C7C8A)),
+                              const SizedBox(width: 10),
+                              _statTile('Streak', '$streak days', Icons.local_fire_department_rounded, const Color(0xFFE07A5F)),
+                            ]),
+                            const SizedBox(height: 24),
+                            _sectionTitle("Today's Steps"),
+                            const SizedBox(height: 12),
+                            Container(
+                              padding: const EdgeInsets.all(20),
+                              decoration: BoxDecoration(color: AppColors.white, borderRadius: BorderRadius.circular(20)),
+                              child: Column(children: [
+                                Row(children: [
+                                  _iconBox(icon: Icons.directions_walk_rounded, color: const Color(0xFF5C7C8A), bg: const Color(0xFFDCEEF5)),
+                                  const SizedBox(width: 14),
+                                  Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                                    Text('$_liveSteps steps', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
+                                    Text('Goal: $safeGoal · ${distanceKm.toStringAsFixed(2)} km', style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+                                  ])),
+                                  Text('${((_liveSteps / safeGoal) * 100).toInt()}%', style: const TextStyle(color: Color(0xFF5C7C8A), fontWeight: FontWeight.w700, fontSize: 16)),
+                                ]),
+                                const SizedBox(height: 14),
+                                _progressBar(value: (_liveSteps / safeGoal).clamp(0.0, 1.0), color: const Color(0xFF5C7C8A)),
+                              ]),
+                            ),
+                            const SizedBox(height: 24),
+                            _sectionTitle('Calories'),
+                            const SizedBox(height: 12),
+                            Container(
+                              padding: const EdgeInsets.all(20),
+                              decoration: BoxDecoration(color: AppColors.white, borderRadius: BorderRadius.circular(20)),
+                              child: Column(children: [
+                                Row(children: [
+                                  Expanded(child: _calorieBlock(icon: Icons.restaurant_rounded, label: 'Gained', value: '$totalGained', unit: 'kcal', color: const Color(0xFF6FBF9F), bg: const Color(0xFFE8F5E9))),
+                                  const SizedBox(width: 12),
+                                  Expanded(child: _calorieBlock(icon: Icons.local_fire_department_rounded, label: 'Burned', value: '$totalBurned', unit: 'kcal', color: const Color(0xFFE07A5F), bg: const Color(0xFFFFEBEE))),
+                                ]),
+                                const SizedBox(height: 16),
+                                Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                                  const Text('Net Calories', style: TextStyle(fontSize: 12, color: AppColors.textSecondary, fontWeight: FontWeight.w500)),
+                                  Text('${netCalories > 0 ? '+' : ''}$netCalories kcal', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: netCalories > 0 ? const Color(0xFFE07A5F) : AppColors.greenDark)),
+                                ]),
+                              ]),
+                            ),
+                            const SizedBox(height: 24),
+                            _sectionTitle('Hydration'),
+                            const SizedBox(height: 12),
+                            Container(
+                              padding: const EdgeInsets.all(20),
+                              decoration: BoxDecoration(color: AppColors.white, borderRadius: BorderRadius.circular(20)),
+                              child: Column(children: [
+                                Row(children: [
+                                  _iconBox(icon: Icons.water_drop_rounded, color: const Color(0xFF5C7C8A), bg: const Color(0xFFDCEEF5)),
+                                  const SizedBox(width: 14),
+                                  Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                                    Text('$water ml', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
+                                    Text('Goal: $waterGoal ml', style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+                                  ])),
+                                  Text('${((water / waterGoal) * 100).toInt()}%', style: const TextStyle(color: AppColors.blue, fontWeight: FontWeight.w700, fontSize: 16)),
+                                ]),
+                                const SizedBox(height: 14),
+                                _progressBar(value: (water / waterGoal).clamp(0.0, 1.0), color: const Color(0xFF5C7C8A)),
+                                const SizedBox(height: 16),
+                                Row(children: [
+                                  Expanded(child: _WaterButton(imagePath: 'assets/images/GLASS.png', label: '+200 ml', onTap: () async {
+                                    await userProfileRef.set({'water': FieldValue.increment(200)}, SetOptions(merge: true));
+                                    await showWaterNotification(200);
+                                  })),
+                                  const SizedBox(width: 12),
+                                  Expanded(child: _WaterButton(imagePath: 'assets/images/JUG.png', label: '+500 ml', onTap: () async {
+                                    await userProfileRef.set({'water': FieldValue.increment(500)}, SetOptions(merge: true));
+                                    await showWaterNotification(500);
+                                  }, isPrimary: true)),
+                                ]),
+                              ]),
+                            ),
+                            const SizedBox(height: 24),
+                            _actionTile(icon: Icons.logout_rounded, label: 'Logout', sublabel: 'Sign out of your account', iconColor: const Color(0xFFE07A5F), onTap: () async {
+                              await FirebaseAuth.instance.signOut();
+                              Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => const auth_login.LoginPage()), (r) => false);
+                            }),
+                            const SizedBox(height: 32),
+                          ])),
+                        ),
+                      ]);
                     },
                   );
                 },
@@ -1578,510 +859,111 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  // ── Helper widgets ──────────────────────────────────────────
-
-  Widget _headerTag(IconData icon, String label) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-    decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.15),
-        borderRadius: BorderRadius.circular(20)),
-    child: Row(mainAxisSize: MainAxisSize.min, children: [
-      Icon(icon, color: Colors.white70, size: 12),
-      const SizedBox(width: 5),
-      Text(label,
-          style: const TextStyle(
-              color: Colors.white70,
-              fontSize: 11,
-              fontWeight: FontWeight.w600)),
-    ]),
-  );
-
-  Widget _headerIconBtn(
-      {required IconData icon, required VoidCallback onTap}) =>
-      GestureDetector(
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.15),
-              borderRadius: BorderRadius.circular(12)),
-          child: Icon(icon, color: AppColors.white, size: 20),
-        ),
-      );
-
-  Widget _iconBox(
-      {required IconData icon,
-        required Color color,
-        required Color bg}) =>
-      Container(
-        padding: const EdgeInsets.all(10),
-        decoration: BoxDecoration(
-            color: bg, borderRadius: BorderRadius.circular(12)),
-        child: Icon(icon, color: color, size: 20),
-      );
-
-  Widget _progressBar(
-      {required double value, required Color color}) =>
-      ClipRRect(
-        borderRadius: BorderRadius.circular(6),
-        child: LinearProgressIndicator(
-          value: value,
-          minHeight: 6,
-          backgroundColor: AppColors.inputField,
-          valueColor: AlwaysStoppedAnimation(color),
-        ),
-      );
-
-  Widget _sectionTitle(String t) => Text(t,
-      style: const TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.w700,
-          color: AppColors.textPrimary,
-          letterSpacing: -0.3));
-
-  Widget _calorieBlock({
-    required IconData icon,
-    required String label,
-    required String value,
-    required String unit,
-    required Color color,
-    required Color bg,
-  }) =>
-      Container(
-        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
-        decoration: BoxDecoration(
-            color: bg, borderRadius: BorderRadius.circular(14)),
-        child: Row(children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-                color: color.withOpacity(0.15),
-                borderRadius: BorderRadius.circular(10)),
-            child: Icon(icon, color: color, size: 18),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-              child:
-              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(label,
-                    style: TextStyle(
-                        fontSize: 10,
-                        color: color.withOpacity(0.8),
-                        fontWeight: FontWeight.w500)),
-                const SizedBox(height: 2),
-                RichText(
-                    text: TextSpan(children: [
-                      TextSpan(
-                          text: value,
-                          style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w800,
-                              color: color)),
-                      TextSpan(
-                          text: ' $unit',
-                          style: TextStyle(
-                              fontSize: 10,
-                              color: color.withOpacity(0.7),
-                              fontWeight: FontWeight.w500)),
-                    ])),
-              ])),
-        ]),
-      );
-
-  Widget _statTile(
-      String label, String value, IconData icon, Color color) =>
-      Expanded(
-        child: Container(
-          padding:
-          const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
-          decoration: BoxDecoration(
-              color: AppColors.white,
-              borderRadius: BorderRadius.circular(18)),
-          child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(7),
-                  decoration: BoxDecoration(
-                      color: color.withOpacity(0.12),
-                      borderRadius: BorderRadius.circular(10)),
-                  child: Icon(icon, color: color, size: 16),
-                ),
-                const SizedBox(height: 10),
-                Text(value,
-                    style: const TextStyle(
-                        fontWeight: FontWeight.w800,
-                        fontSize: 12,
-                        color: AppColors.textPrimary),
-                    overflow: TextOverflow.ellipsis),
-                const SizedBox(height: 2),
-                Text(label,
-                    style: const TextStyle(
-                        color: AppColors.textSecondary, fontSize: 10)),
-              ]),
-        ),
-      );
-
-  Widget _actionTile({
-    required IconData icon,
-    required String label,
-    required VoidCallback onTap,
-    String sublabel = '',
-    Color iconColor = AppColors.blue,
-    Color textColor = AppColors.textPrimary,
-  }) =>
-      GestureDetector(
-        onTap: onTap,
-        child: Container(
-          padding:
-          const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
-          decoration: BoxDecoration(
-              color: AppColors.white,
-              borderRadius: BorderRadius.circular(16)),
-          child: Row(children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                  color: iconColor.withOpacity(0.10),
-                  borderRadius: BorderRadius.circular(10)),
-              child: Icon(icon, color: iconColor, size: 18),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-                child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(label,
-                          style: TextStyle(
-                              fontWeight: FontWeight.w600,
-                              color: textColor,
-                              fontSize: 14)),
-                      if (sublabel.isNotEmpty)
-                        Text(sublabel,
-                            style: const TextStyle(
-                                color: AppColors.textSecondary,
-                                fontSize: 11)),
-                    ])),
-            const Icon(Icons.chevron_right_rounded,
-                color: AppColors.textSecondary, size: 20),
-          ]),
-        ),
-      );
+  Widget _headerTag(IconData icon, String label) => Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5), decoration: BoxDecoration(color: Colors.white.withOpacity(0.15), borderRadius: BorderRadius.circular(20)), child: Row(mainAxisSize: MainAxisSize.min, children: [Icon(icon, color: Colors.white70, size: 12), const SizedBox(width: 5), Text(label, style: const TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.w600))]));
+  Widget _headerIconBtn({required IconData icon, required VoidCallback onTap}) => GestureDetector(onTap: onTap, child: Container(padding: const EdgeInsets.all(10), decoration: BoxDecoration(color: Colors.white.withOpacity(0.15), borderRadius: BorderRadius.circular(12)), child: Icon(icon, color: AppColors.white, size: 20)));
+  Widget _iconBox({required IconData icon, required Color color, required Color bg}) => Container(padding: const EdgeInsets.all(10), decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(12)), child: Icon(icon, color: color, size: 20));
+  Widget _progressBar({required double value, required Color color}) => ClipRRect(borderRadius: BorderRadius.circular(6), child: LinearProgressIndicator(value: value, minHeight: 6, backgroundColor: AppColors.inputField, valueColor: AlwaysStoppedAnimation(color)));
+  Widget _sectionTitle(String t) => Text(t, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.textPrimary, letterSpacing: -0.3));
+  Widget _calorieBlock({required IconData icon, required String label, required String value, required String unit, required Color color, required Color bg}) => Container(padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12), decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(14)), child: Row(children: [Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: color.withOpacity(0.15), borderRadius: BorderRadius.circular(10)), child: Icon(icon, color: color, size: 18)), const SizedBox(width: 10), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(label, style: TextStyle(fontSize: 10, color: color.withOpacity(0.8), fontWeight: FontWeight.w500)), const SizedBox(height: 2), RichText(text: TextSpan(children: [TextSpan(text: value, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: color)), TextSpan(text: ' $unit', style: TextStyle(fontSize: 10, color: color.withOpacity(0.7), fontWeight: FontWeight.w500))]))]))]));
+  Widget _statTile(String label, String value, IconData icon, Color color) => Expanded(child: Container(padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12), decoration: BoxDecoration(color: AppColors.white, borderRadius: BorderRadius.circular(18)), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Container(padding: const EdgeInsets.all(7), decoration: BoxDecoration(color: color.withOpacity(0.12), borderRadius: BorderRadius.circular(10)), child: Icon(icon, color: color, size: 16)), const SizedBox(height: 10), Text(value, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 12, color: AppColors.textPrimary)), const SizedBox(height: 2), Text(label, style: const TextStyle(color: AppColors.textSecondary, fontSize: 10))])));
+  Widget _actionTile({required IconData icon, required String label, required String sublabel, required Color iconColor, required VoidCallback onTap}) => GestureDetector(onTap: onTap, child: Container(padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16), decoration: BoxDecoration(color: AppColors.white, borderRadius: BorderRadius.circular(16)), child: Row(children: [Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: iconColor.withOpacity(0.10), borderRadius: BorderRadius.circular(10)), child: Icon(icon, color: iconColor, size: 18)), const SizedBox(width: 14), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(label, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)), Text(sublabel, style: const TextStyle(color: AppColors.textSecondary, fontSize: 11))])), const Icon(Icons.chevron_right_rounded, color: AppColors.textSecondary, size: 20)])));
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Avatar with completion ring
-// ─────────────────────────────────────────────────────────────────────────────
 class _AvatarWithRing extends StatelessWidget {
   final String initials;
-  final bool isFemale;
+  final String avatarUrl;
   final String avatarBase64;
-  final AvatarPreset resolvedPreset;
   final double completionRatio;
   final int percent;
   final bool isComplete;
 
-  const _AvatarWithRing({
-    required this.initials,
-    required this.isFemale,
-    required this.avatarBase64,
-    required this.resolvedPreset,
-    required this.completionRatio,
-    required this.percent,
-    required this.isComplete,
-  });
+  const _AvatarWithRing({required this.initials, required this.avatarUrl, required this.avatarBase64, required this.completionRatio, required this.percent, required this.isComplete});
 
   @override
   Widget build(BuildContext context) {
     ImageProvider? photoProvider;
     if (avatarBase64.isNotEmpty) {
-      try {
-        photoProvider = MemoryImage(base64Decode(avatarBase64));
-      } catch (_) {}
+      try { photoProvider = MemoryImage(base64Decode(avatarBase64)); } catch (_) {}
+    } else if (avatarUrl.isNotEmpty) {
+      photoProvider = NetworkImage(avatarUrl);
     }
 
     return Stack(alignment: Alignment.center, children: [
-      SizedBox(
-        width: 88,
-        height: 88,
-        child: isComplete
-            ? const SizedBox.shrink()
-            : CustomPaint(
-          painter: _RingPainter(
-              progress: completionRatio,
-              activeColor: const Color(0xFF8FC9A9),
-              trackColor: Colors.white.withOpacity(0.25)),
-        ),
-      ),
+      SizedBox(width: 88, height: 88, child: isComplete ? const SizedBox.shrink() : CustomPaint(painter: _RingPainter(progress: completionRatio, activeColor: const Color(0xFF8FC9A9), trackColor: Colors.white.withOpacity(0.25)))),
       Container(
-        width: 70,
-        height: 70,
+        width: 70, height: 70,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: photoProvider != null ? null : resolvedPreset.bgColor,
-          image: photoProvider != null
-              ? DecorationImage(image: photoProvider, fit: BoxFit.cover)
-              : null,
-          border: isComplete
-              ? Border.all(
-              color: Colors.white.withOpacity(0.7), width: 2.5)
-              : null,
-          boxShadow: [
-            BoxShadow(
-                color: Colors.black.withOpacity(0.18),
-                blurRadius: 10,
-                offset: const Offset(0, 3))
-          ],
+          image: photoProvider != null ? DecorationImage(image: photoProvider, fit: BoxFit.cover) : null,
+          color: photoProvider == null ? AppColors.blue : null,
+          border: Border.all(color: Colors.black, width: 1),
+          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.18), blurRadius: 10, offset: const Offset(0, 3))],
         ),
-        child: photoProvider == null
-            ? Center(
-            child: Icon(resolvedPreset.icon,
-                color: resolvedPreset.shirtColor, size: 30))
-            : null,
+        child: photoProvider == null ? Center(child: Text(initials, style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w800))) : null,
       ),
-      if (!isComplete)
-        Positioned(
-          bottom: 0,
-          left: 0,
-          child: Container(
-            padding:
-            const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
-            decoration: BoxDecoration(
-                color: AppColors.blue,
-                borderRadius: BorderRadius.circular(8),
-                boxShadow: [
-                  BoxShadow(
-                      color: Colors.black.withOpacity(0.2),
-                      blurRadius: 4)
-                ]),
-            child: Text('$percent%',
-                style: const TextStyle(
-                    fontSize: 9,
-                    fontWeight: FontWeight.w800,
-                    color: Colors.white)),
-          ),
-        ),
-      Positioned(
-        bottom: isComplete ? 4 : 22,
-        right: 2,
-        child: Container(
-          width: 24,
-          height: 24,
-          decoration: BoxDecoration(
-              color: AppColors.white,
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                    color: Colors.black.withOpacity(0.18),
-                    blurRadius: 5)
-              ]),
-          child: const Icon(Icons.camera_alt_rounded,
-              size: 13, color: AppColors.blue),
-        ),
-      ),
-      if (isComplete)
-        Positioned(
-          bottom: 4,
-          left: 0,
-          child: Container(
-            width: 22,
-            height: 22,
-            decoration: BoxDecoration(
-                color: AppColors.greenDark,
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                      color: Colors.black.withOpacity(0.2),
-                      blurRadius: 4)
-                ]),
-            child: const Icon(Icons.check_rounded,
-                size: 13, color: Colors.white),
-          ),
-        ),
+      if (!isComplete) Positioned(bottom: 0, left: 0, child: Container(padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2), decoration: BoxDecoration(color: AppColors.blue, borderRadius: BorderRadius.circular(8)), child: Text('$percent%', style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w800, color: Colors.white)))),
+      Positioned(bottom: isComplete ? 4 : 22, right: 2, child: Container(width: 24, height: 24, decoration: const BoxDecoration(color: AppColors.white, shape: BoxShape.circle), child: const Icon(Icons.camera_alt_rounded, size: 13, color: AppColors.blue))),
+      if (isComplete) Positioned(bottom: 4, left: 0, child: Container(width: 22, height: 22, decoration: const BoxDecoration(color: AppColors.greenDark, shape: BoxShape.circle), child: const Icon(Icons.check_rounded, size: 13, color: Colors.white))),
     ]);
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Ring painter
-// ─────────────────────────────────────────────────────────────────────────────
 class _RingPainter extends CustomPainter {
   final double progress;
   final Color activeColor;
   final Color trackColor;
-
-  const _RingPainter(
-      {required this.progress,
-        required this.activeColor,
-        required this.trackColor});
-
+  _RingPainter({required this.progress, required this.activeColor, required this.trackColor});
   @override
   void paint(Canvas canvas, Size size) {
-    const sw = 4.0;
-    final center = Offset(size.width / 2, size.height / 2);
-    final radius = (size.width / 2) - sw / 2;
-    canvas.drawCircle(
-        center,
-        radius,
-        Paint()
-          ..color = trackColor
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = sw);
-    if (progress > 0) {
-      canvas.drawArc(
-        Rect.fromCircle(center: center, radius: radius),
-        -3.14159265 / 2,
-        2 * 3.14159265 * progress.clamp(0.0, 1.0),
-        false,
-        Paint()
-          ..color = activeColor
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = sw
-          ..strokeCap = StrokeCap.round,
-      );
-    }
+    const sw = 4.0; final center = Offset(size.width / 2, size.height / 2); final radius = (size.width / 2) - sw / 2;
+    canvas.drawCircle(center, radius, Paint()..color = trackColor..style = PaintingStyle.stroke..strokeWidth = sw);
+    if (progress > 0) canvas.drawArc(Rect.fromCircle(center: center, radius: radius), -1.570796, 6.283185 * progress.clamp(0.0, 1.0), false, Paint()..color = activeColor..style = PaintingStyle.stroke..strokeWidth = sw..strokeCap = StrokeCap.round);
   }
-
   @override
   bool shouldRepaint(_RingPainter o) => o.progress != progress;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Pedometer status chip
-// ─────────────────────────────────────────────────────────────────────────────
 class _PedometerChip extends StatelessWidget {
   final String status;
   final int liveSteps;
   const _PedometerChip({required this.status, required this.liveSteps});
-
   @override
   Widget build(BuildContext context) {
     final bool walking = status == 'walking';
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      decoration: BoxDecoration(
-        color: walking
-            ? AppColors.greenDark.withOpacity(0.25)
-            : Colors.white.withOpacity(0.15),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Row(mainAxisSize: MainAxisSize.min, children: [
-        Icon(
-          walking
-              ? Icons.directions_walk_rounded
-              : Icons.airline_seat_recline_normal_rounded,
-          color:
-          walking ? AppColors.greenLight : Colors.white70,
-          size: 13,
-        ),
-        const SizedBox(width: 5),
-        Text(
-          walking
-              ? 'Walking · $liveSteps steps'
-              : 'Standing still',
-          style: TextStyle(
-              color: walking
-                  ? AppColors.greenLight
-                  : Colors.white70,
-              fontSize: 11,
-              fontWeight: FontWeight.w600),
-        ),
-      ]),
-    );
+    return Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5), decoration: BoxDecoration(color: walking ? AppColors.greenDark.withOpacity(0.25) : Colors.white.withOpacity(0.15), borderRadius: BorderRadius.circular(20)), child: Row(mainAxisSize: MainAxisSize.min, children: [Icon(walking ? Icons.directions_walk_rounded : Icons.airline_seat_recline_normal_rounded, color: walking ? AppColors.greenLight : Colors.white70, size: 13), const SizedBox(width: 5), Text(walking ? 'Walking · $liveSteps steps' : 'Standing still', style: TextStyle(color: walking ? AppColors.greenLight : Colors.white70, fontSize: 11, fontWeight: FontWeight.w600))]));
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Water Button
-// ─────────────────────────────────────────────────────────────────────────────
 class _WaterButton extends StatelessWidget {
   final String imagePath;
   final String label;
   final VoidCallback onTap;
   final bool isPrimary;
-
-  const _WaterButton({
-    required this.imagePath,
-    required this.label,
-    required this.onTap,
-    this.isPrimary = false,
-  });
-
+  const _WaterButton({required this.imagePath, required this.label, required this.onTap, this.isPrimary = false});
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 14),
-        decoration: BoxDecoration(
-          color: isPrimary ? AppColors.greenDark : AppColors.inputField,
-          borderRadius: BorderRadius.circular(14),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Image.asset(imagePath, height: 32),
-            const SizedBox(height: 6),
-            Text(label,
-                style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: isPrimary
-                        ? AppColors.white
-                        : AppColors.textPrimary)),
-          ],
-        ),
-      ),
-    );
+    return GestureDetector(onTap: onTap, child: Container(padding: const EdgeInsets.symmetric(vertical: 14), decoration: BoxDecoration(color: isPrimary ? AppColors.greenDark : AppColors.inputField, borderRadius: BorderRadius.circular(14)), child: Column(mainAxisSize: MainAxisSize.min, children: [Image.asset(imagePath, height: 32), const SizedBox(height: 6), Text(label, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: isPrimary ? AppColors.white : AppColors.textPrimary))])));
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Edit Profile Page
-// ─────────────────────────────────────────────────────────────────────────────
 class EditProfilePage extends StatefulWidget {
   final String username;
   const EditProfilePage({super.key, required this.username});
-
   @override
   State<EditProfilePage> createState() => _EditProfilePageState();
 }
 
 class _EditProfilePageState extends State<EditProfilePage> {
-  final _profileRef =
-  FirebaseFirestore.instance.collection('user_profiles');
+  final _profileRef = FirebaseFirestore.instance.collection('user_profiles');
   final _usersRef = FirebaseFirestore.instance.collection('users');
-
   final _basicFields = ['name', 'age', 'gender', 'city'];
   final _bodyFields = ['weight', 'height'];
-  final _fitnessFields = [
-    'fitnessLevel', 'preferredActivity', 'weeklyGoalDays', 'goal', 'bio'
-  ];
-
-  final fieldLabels = {
-    'name': 'Full Name', 'age': 'Age', 'gender': 'Gender', 'city': 'City',
-    'weight': 'Weight (kg)', 'height': 'Height (cm)',
-    'fitnessLevel': 'Fitness Level', 'preferredActivity': 'Preferred Activity',
-    'weeklyGoalDays': 'Active Days per Week', 'goal': 'Fitness Goal',
-    'bio': 'About Me',
-  };
-
-  final fieldIcons = {
-    'name': Icons.person_rounded, 'age': Icons.cake_rounded,
-    'gender': Icons.wc_rounded, 'city': Icons.location_on_rounded,
-    'weight': Icons.monitor_weight_rounded, 'height': Icons.height_rounded,
-    'fitnessLevel': Icons.bar_chart_rounded,
-    'preferredActivity': Icons.sports_score_rounded,
-    'weeklyGoalDays': Icons.calendar_month_rounded,
-    'goal': Icons.flag_rounded, 'bio': Icons.edit_note_rounded,
-  };
-
-  final _genderOptions = ['Male', 'Female', 'Other', 'Prefer not to say'];
+  final _fitnessFields = ['fitnessLevel', 'preferredActivity', 'weeklyGoalDays', 'goal', 'bio'];
+  final fieldLabels = {'name': 'Full Name', 'age': 'Age', 'gender': 'Gender', 'city': 'City', 'weight': 'Weight (kg)', 'height': 'Height (cm)', 'fitnessLevel': 'Fitness Level', 'preferredActivity': 'Preferred Activity', 'weeklyGoalDays': 'Active Days/Week', 'goal': 'Fitness Goal', 'bio': 'About Me'};
+  final fieldIcons = {'name': Icons.person_rounded, 'age': Icons.cake_rounded, 'gender': Icons.wc_rounded, 'city': Icons.location_on_rounded, 'weight': Icons.monitor_weight_rounded, 'height': Icons.height_rounded, 'fitnessLevel': Icons.bar_chart_rounded, 'preferredActivity': Icons.sports_score_rounded, 'weeklyGoalDays': Icons.calendar_month_rounded, 'goal': Icons.flag_rounded, 'bio': Icons.edit_note_rounded};
+  final _genderOptions = ['Male', 'Female', 'Other'];
   final _fitnessOptions = ['Beginner', 'Intermediate', 'Advanced', 'Athlete'];
-  final _activityOptions = [
-    'Running', 'Cycling', 'Swimming', 'Weightlifting',
-    'Yoga', 'HIIT', 'Football', 'Basketball', 'Hiking', 'Boxing',
-  ];
+  final _activityOptions = ['Running', 'Cycling', 'Swimming', 'Weightlifting', 'Yoga', 'HIIT', 'Hiking', 'Boxing'];
   final _weeklyDayOptions = ['1', '2', '3', '4', '5', '6', '7'];
 
   Map<String, TextEditingController> controllers = {};
@@ -2090,28 +972,15 @@ class _EditProfilePageState extends State<EditProfilePage> {
   @override
   void initState() {
     super.initState();
-    for (var f in [..._basicFields, ..._bodyFields, ..._fitnessFields]) {
-      controllers[f] = TextEditingController();
-    }
+    for (var f in [..._basicFields, ..._bodyFields, ..._fitnessFields]) controllers[f] = TextEditingController();
     _loadData();
-  }
-
-  @override
-  void dispose() {
-    controllers.forEach((_, c) => c.dispose());
-    super.dispose();
   }
 
   void _loadData() async {
     final pDoc = await _profileRef.doc(widget.username).get();
     final uDoc = await _usersRef.doc(widget.username).get();
-    final merged = {
-      if (uDoc.exists) ...uDoc.data()!,
-      if (pDoc.exists) ...pDoc.data()!,
-    };
-    for (var f in controllers.keys) {
-      controllers[f]!.text = merged[f]?.toString() ?? '';
-    }
+    final merged = {if (uDoc.exists) ...uDoc.data()!, if (pDoc.exists) ...pDoc.data()!};
+    for (var f in controllers.keys) controllers[f]!.text = merged[f]?.toString() ?? '';
     setState(() {});
   }
 
@@ -2121,207 +990,33 @@ class _EditProfilePageState extends State<EditProfilePage> {
     controllers.forEach((k, v) => data[k] = v.text);
     await _profileRef.doc(widget.username).set(data, SetOptions(merge: true));
     await _usersRef.doc(widget.username).set(data, SetOptions(merge: true));
-    if (mounted) {
-      setState(() => _saving = false);
-      Navigator.pop(context);
-    }
+    if (mounted) Navigator.pop(context);
   }
-
-  TextInputType _keyboard(String f) {
-    if (['age', 'weight', 'height', 'weeklyGoalDays'].contains(f))
-      return TextInputType.number;
-    if (f == 'bio') return TextInputType.multiline;
-    return TextInputType.text;
-  }
-
-  List<String>? _dropdownOptions(String f) {
-    switch (f) {
-      case 'gender': return _genderOptions;
-      case 'fitnessLevel': return _fitnessOptions;
-      case 'preferredActivity': return _activityOptions;
-      case 'weeklyGoalDays': return _weeklyDayOptions;
-      default: return null;
-    }
-  }
-
-  InputDecoration _inputDeco(String f) => InputDecoration(
-    labelText: fieldLabels[f],
-    prefixIcon: Icon(fieldIcons[f] ?? Icons.edit_rounded,
-        size: 18, color: AppColors.textSecondary),
-    labelStyle:
-    const TextStyle(color: AppColors.textSecondary, fontSize: 13),
-    filled: true,
-    fillColor: AppColors.background,
-    border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide.none),
-    enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide.none),
-    focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide:
-        const BorderSide(color: AppColors.blue, width: 1.5)),
-    contentPadding:
-    const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
-  );
-
-  Widget _buildField(String f) {
-    final opts = _dropdownOptions(f);
-    if (opts != null) {
-      final cur = controllers[f]!.text;
-      final valid = opts.contains(cur) ? cur : null;
-      return Padding(
-        padding: const EdgeInsets.only(bottom: 10),
-        child: DropdownButtonFormField<String>(
-          value: valid,
-          isExpanded: true,
-          decoration: _inputDeco(f),
-          icon: const Icon(Icons.keyboard_arrow_down_rounded,
-              color: AppColors.textSecondary, size: 20),
-          items: opts
-              .map((o) => DropdownMenuItem(
-              value: o,
-              child: Text(o,
-                  style: const TextStyle(
-                      color: AppColors.textPrimary, fontSize: 14))))
-              .toList(),
-          onChanged: (v) {
-            if (v != null) setState(() => controllers[f]!.text = v);
-          },
-          style: const TextStyle(color: AppColors.textPrimary, fontSize: 14),
-        ),
-      );
-    }
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: TextField(
-        controller: controllers[f],
-        keyboardType: _keyboard(f),
-        maxLines: f == 'bio' ? 3 : 1,
-        style: const TextStyle(color: AppColors.textPrimary, fontSize: 14),
-        decoration: _inputDeco(f),
-      ),
-    );
-  }
-
-  Widget _groupCard(
-      {required String title,
-        required IconData icon,
-        required Color color,
-        required List<String> fields}) =>
-      Container(
-        margin: const EdgeInsets.only(bottom: 16),
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 6),
-        decoration: BoxDecoration(
-          color: AppColors.white,
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: color.withOpacity(0.12)),
-        ),
-        child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(bottom: 14),
-                child: Row(children: [
-                  Container(
-                      padding: const EdgeInsets.all(7),
-                      decoration: BoxDecoration(
-                          color: color.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(9)),
-                      child: Icon(icon, size: 15, color: color)),
-                  const SizedBox(width: 9),
-                  Text(title,
-                      style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                          color: color,
-                          letterSpacing: 0.2)),
-                ]),
-              ),
-              ...fields.map(_buildField),
-            ]),
-      );
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: const Text('Edit Profile',
-            style: TextStyle(
-                color: AppColors.textPrimary,
-                fontWeight: FontWeight.w700,
-                fontSize: 17)),
-        backgroundColor: AppColors.background,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: AppColors.textPrimary),
-        centerTitle: true,
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 12),
-            child: TextButton(
-              onPressed: _saving ? null : _saveData,
-              child: _saving
-                  ? const SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(
-                      strokeWidth: 2, color: AppColors.blue))
-                  : const Text('Save',
-                  style: TextStyle(
-                      color: AppColors.blue,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 15)),
-            ),
-          ),
-        ],
-      ),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
-        children: [
-          _groupCard(
-              title: 'Basic Info',
-              icon: Icons.person_outline_rounded,
-              color: const Color(0xFF5C7C8A),
-              fields: _basicFields),
-          _groupCard(
-              title: 'Body Metrics',
-              icon: Icons.straighten_rounded,
-              color: const Color(0xFF6FBF9F),
-              fields: _bodyFields),
-          _groupCard(
-              title: 'Fitness Profile',
-              icon: Icons.fitness_center_rounded,
-              color: const Color(0xFFE07A5F),
-              fields: _fitnessFields),
-          const SizedBox(height: 8),
-          SizedBox(
-            width: double.infinity,
-            height: 52,
-            child: ElevatedButton(
-              onPressed: _saving ? null : _saveData,
-              style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.greenDark,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14)),
-                  elevation: 0),
-              child: _saving
-                  ? const SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(
-                      strokeWidth: 2, color: Colors.white))
-                  : const Text('Save Changes',
-                  style: TextStyle(
-                      color: AppColors.white,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 15)),
-            ),
-          ),
-        ],
-      ),
+      appBar: AppBar(title: const Text('Edit Profile', style: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 17)), backgroundColor: AppColors.background, elevation: 0, iconTheme: const IconThemeData(color: AppColors.textPrimary), centerTitle: true),
+      body: ListView(padding: const EdgeInsets.all(20), children: [
+        _groupCard(title: 'Basic Info', icon: Icons.person_outline_rounded, color: const Color(0xFF5C7C8A), fields: _basicFields),
+        _groupCard(title: 'Body Metrics', icon: Icons.straighten_rounded, color: const Color(0xFF6FBF9F), fields: _bodyFields),
+        _groupCard(title: 'Fitness Profile', icon: Icons.fitness_center_rounded, color: const Color(0xFFE07A5F), fields: _fitnessFields),
+        const SizedBox(height: 8),
+        SizedBox(width: double.infinity, height: 52, child: ElevatedButton(onPressed: _saving ? null : _saveData, child: _saving ? const CircularProgressIndicator(color: Colors.white) : const Text('Save Changes'))),
+      ]),
     );
   }
-}
 
+  Widget _groupCard({required String title, required IconData icon, required Color color, required List<String> fields}) => Container(
+    margin: const EdgeInsets.only(bottom: 16), padding: const EdgeInsets.fromLTRB(16, 16, 16, 6),
+    decoration: BoxDecoration(color: AppColors.white, borderRadius: BorderRadius.circular(18), border: Border.all(color: color.withOpacity(0.12))),
+    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Padding(padding: const EdgeInsets.only(bottom: 14), child: Row(children: [Container(padding: const EdgeInsets.all(7), decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(9)), child: Icon(icon, size: 15, color: color)), const SizedBox(width: 9), Text(title, style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: color))])),
+      ...fields.map((f) {
+        final opts = f == 'gender' ? _genderOptions : (f == 'fitnessLevel' ? _fitnessOptions : (f == 'preferredActivity' ? _activityOptions : (f == 'weeklyGoalDays' ? _weeklyDayOptions : null)));
+        return Padding(padding: const EdgeInsets.only(bottom: 10), child: opts != null ? DropdownButtonFormField<String>(value: opts.contains(controllers[f]!.text) ? controllers[f]!.text : null, decoration: InputDecoration(labelText: fieldLabels[f], prefixIcon: Icon(fieldIcons[f], size: 18)), items: opts.map((o) => DropdownMenuItem(value: o, child: Text(o))).toList(), onChanged: (v) => setState(() => controllers[f]!.text = v!)) : TextField(controller: controllers[f], decoration: InputDecoration(labelText: fieldLabels[f], prefixIcon: Icon(fieldIcons[f], size: 18)), keyboardType: ['age', 'weight', 'height', 'weeklyGoalDays'].contains(f) ? TextInputType.number : TextInputType.text));
+      }),
+    ]),
+  );
+}
