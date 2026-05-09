@@ -60,6 +60,8 @@ class WorkoutHistory extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final username = Session().currentUsername ?? '';
+
     return Scaffold(
       backgroundColor: const Color(0xFFF4F6FA),
       appBar: AppBar(
@@ -69,22 +71,20 @@ class WorkoutHistory extends StatelessWidget {
         foregroundColor: Colors.black,
         elevation: 0,
       ),
+
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
             .collection('workout_history')
-            .where('username', isEqualTo: Session.getUser())
+            .where('username', isEqualTo: username)
             .orderBy('timestamp', descending: true)
             .snapshots(),
+
         builder: (context, snapshot) {
-          if (snapshot.connectionState ==
-              ConnectionState.waiting) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
           }
 
-          if (!snapshot.hasData ||
-              snapshot.data!.docs.isEmpty) {
+          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
             return const Center(
               child: Text(
                 'No workouts yet 💪',
@@ -102,17 +102,18 @@ class WorkoutHistory extends StatelessWidget {
             padding: const EdgeInsets.all(20),
             itemCount: docs.length,
             itemBuilder: (context, index) {
-              final data =
-              docs[index].data() as Map<String, dynamic>;
+              final data = docs[index].data() as Map<String, dynamic>;
 
-              final category =
-                  data['category']?.toString() ?? '';
+              final category = data['category']?.toString() ?? '';
+              final timestamp = data['timestamp'] as Timestamp?;
 
-              final timestamp =
-              data['timestamp'] as Timestamp?;
+              final date = timestamp?.toDate() ?? DateTime.now();
 
-              final date =
-                  timestamp?.toDate() ?? DateTime.now();
+              final calories =
+              ((data['calories'] ?? 0) as num).toInt();
+
+              final duration =
+              ((data['duration'] ?? 0) as num).toInt();
 
               return Container(
                 margin: const EdgeInsets.only(bottom: 18),
@@ -130,14 +131,13 @@ class WorkoutHistory extends StatelessWidget {
                 ),
                 child: Row(
                   children: [
+                    // ICON
                     Container(
                       width: 68,
                       height: 68,
                       decoration: BoxDecoration(
-                        color: getWorkoutColor(category)
-                            .withOpacity(0.12),
-                        borderRadius:
-                        BorderRadius.circular(20),
+                        color: getWorkoutColor(category).withOpacity(0.12),
+                        borderRadius: BorderRadius.circular(20),
                       ),
                       child: Icon(
                         getWorkoutIcon(category),
@@ -148,10 +148,10 @@ class WorkoutHistory extends StatelessWidget {
 
                     const SizedBox(width: 18),
 
+                    // DETAILS
                     Expanded(
                       child: Column(
-                        crossAxisAlignment:
-                        CrossAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                             data['title'] ?? '',
@@ -185,24 +185,21 @@ class WorkoutHistory extends StatelessWidget {
                       ),
                     ),
 
+                    // RIGHT SIDE
                     Column(
-                      crossAxisAlignment:
-                      CrossAxisAlignment.end,
+                      crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
                         Container(
-                          padding:
-                          const EdgeInsets.symmetric(
+                          padding: const EdgeInsets.symmetric(
                             horizontal: 10,
                             vertical: 6,
                           ),
                           decoration: BoxDecoration(
-                            color:
-                            Colors.orange.withOpacity(0.1),
-                            borderRadius:
-                            BorderRadius.circular(12),
+                            color: Colors.orange.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
-                            '${data['calories'] ?? 0} kcal',
+                            '$calories kcal',
                             style: const TextStyle(
                               color: Colors.orange,
                               fontWeight: FontWeight.bold,
@@ -213,9 +210,7 @@ class WorkoutHistory extends StatelessWidget {
                         const SizedBox(height: 10),
 
                         Text(
-                          formatTime(
-                            data['duration'] ?? 0,
-                          ),
+                          formatTime(duration),
                           style: TextStyle(
                             color: Colors.grey.shade700,
                             fontWeight: FontWeight.w600,

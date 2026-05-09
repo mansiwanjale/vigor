@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:vigor/main.dart';
-import 'package:vigor/session.dart';
-import 'workout_home.dart';
+import 'package:google_fonts/google_fonts.dart';
+
+import '../../main.dart';
+import '../../session.dart';
 
 class WorkoutSummary extends StatelessWidget {
   final String title;
@@ -17,146 +18,167 @@ class WorkoutSummary extends StatelessWidget {
     required this.reps,
   }) : super(key: key);
 
-  String formatTime(int sec) {
-    int min = sec ~/ 60;
-    int rem = sec % 60;
-    return '${min.toString().padLeft(2, '0')}:${rem.toString().padLeft(2, '0')}';
+  String _formatTime(int sec) {
+    final m = sec ~/ 60;
+    final s = sec % 60;
+    return '${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
   }
 
   @override
   Widget build(BuildContext context) {
-    int score = ((calories + reps) * 1.3).toInt();
+    final int score = ((calories + reps) * 1.3).toInt();
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0B1220),
-
+      backgroundColor: AppColors.background,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
+              const SizedBox(height: 20),
 
-              const SizedBox(height: 10),
-
-              // ─── SUCCESS ICON ───
+              // ── SUCCESS BADGE ──
               Container(
-                width: 110,
-                height: 110,
+                width: 90,
+                height: 90,
                 decoration: BoxDecoration(
+                  color: AppColors.green.withOpacity(0.15),
                   shape: BoxShape.circle,
-                  color: Colors.green.withOpacity(0.15),
                 ),
-                child: const Icon(
-                  Icons.check_circle,
-                  color: Colors.greenAccent,
-                  size: 70,
+                child: Icon(
+                  Icons.check_rounded,
+                  color: AppColors.greenDark,
+                  size: 48,
                 ),
               ),
 
               const SizedBox(height: 20),
 
-              const Text(
-                "Workout Complete 🎉",
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
+              Text(
+                'WORKOUT COMPLETE',
+                style: GoogleFonts.bebasNeue(
+                  fontSize: 36,
+                  letterSpacing: 3,
+                  color: AppColors.textPrimary,
                 ),
               ),
 
-              const SizedBox(height: 6),
+              const SizedBox(height: 4),
 
               Text(
                 title,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: Colors.white70,
+                style: GoogleFonts.barlowCondensed(
                   fontSize: 16,
+                  color: AppColors.textSecondary,
                 ),
               ),
 
-              const SizedBox(height: 25),
+              const SizedBox(height: 28),
 
-              // ─── MAIN CALORIES CARD ───
+              // ── MAIN CALORIES HERO ──
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.all(26),
+                padding: const EdgeInsets.symmetric(vertical: 32),
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF7C3AED), Color(0xFF4F46E5)],
-                  ),
-                  borderRadius: BorderRadius.circular(28),
+                  color: AppColors.green,
+                  borderRadius: BorderRadius.circular(24),
                 ),
                 child: Column(
                   children: [
                     Text(
-                      "$calories",
-                      style: const TextStyle(
+                      '$calories',
+                      style: GoogleFonts.bebasNeue(
+                        fontSize: 72,
                         color: Colors.white,
-                        fontSize: 54,
-                        fontWeight: FontWeight.bold,
+                        letterSpacing: 2,
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    const Text(
-                      "Calories Burned",
-                      style: TextStyle(
+                    Text(
+                      'CALORIES BURNED',
+                      style: GoogleFonts.barlowCondensed(
+                        fontSize: 14,
+                        letterSpacing: 2,
                         color: Colors.white70,
-                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ],
                 ),
               ),
 
-              const SizedBox(height: 25),
+              const SizedBox(height: 20),
 
-              // ─── STATS ROW 1 ───
+              // ── STATS GRID ──
               Row(
                 children: [
-                  _card("Duration", formatTime(duration), Icons.timer),
+                  _statCard(
+                    Icons.timer_rounded,
+                    _formatTime(duration),
+                    'Duration',
+                    AppColors.blue,
+                  ),
                   const SizedBox(width: 12),
-                  _card("Reps", "$reps", Icons.repeat),
+                  _statCard(
+                    Icons.repeat_rounded,
+                    '$reps',
+                    'Total Reps',
+                    AppColors.green,
+                  ),
                 ],
               ),
 
               const SizedBox(height: 12),
 
-              // ─── STATS ROW 2 ───
               Row(
                 children: [
-                  _card("Score", "$score", Icons.emoji_events),
+                  _statCard(
+                    Icons.emoji_events_rounded,
+                    '$score',
+                    'Score',
+                    Colors.orange,
+                  ),
                   const SizedBox(width: 12),
-                  _card("Status", "Completed", Icons.check_circle),
+                  _statCard(
+                    Icons.check_circle_rounded,
+                    'Done',
+                    'Status',
+                    AppColors.greenDark,
+                  ),
                 ],
               ),
 
-              const SizedBox(height: 25),
+              const SizedBox(height: 24),
 
-              // ─── MOTIVATION CARD ───
+              // ── MOTIVATION CARD ──
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: Colors.white10,
+                  color: AppColors.white,
                   borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: AppColors.card),
                 ),
-                child: const Column(
+                child: Column(
                   children: [
+                    const Text('🔥', style: TextStyle(fontSize: 28)),
+                    const SizedBox(height: 8),
                     Text(
-                      "Keep Going 🔥",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+                      'Keep Going!',
+                      style: GoogleFonts.bebasNeue(
+                        fontSize: 26,
+                        color: AppColors.textPrimary,
+                        letterSpacing: 1,
                       ),
                     ),
-                    SizedBox(height: 8),
+                    const SizedBox(height: 6),
                     Text(
-                      "Every workout builds your stronger version.",
+                      'Every workout builds your stronger version. Show up again tomorrow.',
                       textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: Colors.white60,
+                      style: GoogleFonts.barlowCondensed(
+                        fontSize: 15,
+                        color: AppColors.textSecondary,
                         height: 1.4,
                       ),
                     ),
@@ -164,32 +186,37 @@ class WorkoutSummary extends StatelessWidget {
                 ),
               ),
 
-              const SizedBox(height: 30),
+              const SizedBox(height: 28),
 
-              // ─── BUTTON ───
-              ElevatedButton(
-                onPressed: () {
+              // ── BACK BUTTON ──
+              GestureDetector(
+                onTap: () {
                   Navigator.pushAndRemoveUntil(
                     context,
                     MaterialPageRoute(
                       builder: (_) => NavigationPage(
-                        username:
-                        Session().currentUsername ?? "User",
+                        username: Session().currentUsername ?? 'User',
                       ),
                     ),
                         (route) => false,
                   );
                 },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.deepPurpleAccent,
-                  minimumSize: const Size(double.infinity, 55),
-                  shape: RoundedRectangleBorder(
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 18),
+                  decoration: BoxDecoration(
+                    color: AppColors.blue,
                     borderRadius: BorderRadius.circular(18),
                   ),
-                ),
-                child: const Text(
-                  "Back to Dashboard",
-                  style: TextStyle(fontSize: 16),
+                  child: Text(
+                    'BACK TO DASHBOARD',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.bebasNeue(
+                      fontSize: 20,
+                      letterSpacing: 3,
+                      color: Colors.white,
+                    ),
+                  ),
                 ),
               ),
 
@@ -201,30 +228,33 @@ class WorkoutSummary extends StatelessWidget {
     );
   }
 
-  Widget _card(String title, String value, IconData icon) {
+  Widget _statCard(IconData icon, String value, String label, Color color) {
     return Expanded(
       child: Container(
         padding: const EdgeInsets.all(18),
         decoration: BoxDecoration(
-          color: Colors.white10,
+          color: AppColors.white,
           borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: AppColors.card),
         ),
         child: Column(
           children: [
-            Icon(icon, color: Colors.deepPurpleAccent),
-            const SizedBox(height: 10),
+            Icon(icon, color: color, size: 22),
+            const SizedBox(height: 8),
             Text(
               value,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
+              style: GoogleFonts.bebasNeue(
+                fontSize: 26,
+                color: AppColors.textPrimary,
+                letterSpacing: 1,
               ),
             ),
-            const SizedBox(height: 4),
             Text(
-              title,
-              style: const TextStyle(color: Colors.white54),
+              label,
+              style: GoogleFonts.barlowCondensed(
+                fontSize: 12,
+                color: AppColors.textSecondary,
+              ),
             ),
           ],
         ),

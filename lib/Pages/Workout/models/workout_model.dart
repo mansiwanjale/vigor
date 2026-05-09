@@ -6,6 +6,8 @@ class WorkoutModel {
   final int duration;
   final int calories;
   final String image;
+  final int sets;
+  final String icon;
 
   WorkoutModel({
     required this.title,
@@ -13,9 +15,10 @@ class WorkoutModel {
     required this.duration,
     required this.calories,
     required this.image,
+    this.sets = 4,
+    this.icon = '🏋️',
   });
 
-  // 👉 Used ONLY for workout programs (seeded ones)
   Map<String, dynamic> toMap() {
     return {
       "title": title,
@@ -23,6 +26,8 @@ class WorkoutModel {
       "duration": duration,
       "calories": calories,
       "image": image,
+      "sets": sets,
+      "icon": icon,
     };
   }
 
@@ -30,11 +35,11 @@ class WorkoutModel {
     return WorkoutModel(
       title: map["title"] ?? "",
       category: map["category"] ?? "",
-      // Use int.tryParse to safely handle Strings from Firestore
       duration: int.tryParse(map["duration"].toString()) ?? 0,
       calories: int.tryParse(map["calories"].toString()) ?? 0,
       image: map["image"] ?? "",
+      sets: int.tryParse(map["sets"].toString()) ?? 4,
+      icon: map["icon"] ?? "🏋️",
     );
   }
-
 }
